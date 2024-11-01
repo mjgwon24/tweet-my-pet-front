@@ -6,7 +6,7 @@ import config from '../config/config';
 /**
  * 회원가입 화면
  * @since 2024.10.26
- * @latest 2024.10.27
+ * @latest 2024.11.02
  * @author 권민지
  */
 const SignUpScreen: React.FC = () => {
@@ -102,23 +102,23 @@ const SignUpScreen: React.FC = () => {
         setIsTouched(true);
 
         // 입력 필드 유효성 검증
-        // if (!id.trim() || !password.trim() || !name.trim() || !phone.trim()) {
-        //     Alert.alert('입력폼 빈칸 존재', '모든 입력폼을 채워주세요.');
-        //
-        //     // 빈 필드에 포커스
-        //     if (!id.trim()) {
-        //         idRef.current?.focus();
-        //     } else if (!password.trim()) {
-        //         passwordRef.current?.focus();
-        //     } else if (!passwordCheck.trim()) {
-        //         passwordCheckRef.current?.focus();
-        //     } else if (!name.trim()) {
-        //         nameRef.current?.focus();
-        //     } else if (!phone.trim()) {
-        //         phoneRef.current?.focus();
-        //     }
-        //     return;
-        // }
+        if (!id.trim() || !password.trim() || !name.trim() || !phone.trim()) {
+            Alert.alert('입력폼 빈칸 존재', '모든 입력폼을 채워주세요.');
+
+            // 빈 필드에 포커스
+            if (!id.trim()) {
+                idRef.current?.focus();
+            } else if (!password.trim()) {
+                passwordRef.current?.focus();
+            } else if (!passwordCheck.trim()) {
+                passwordCheckRef.current?.focus();
+            } else if (!name.trim()) {
+                nameRef.current?.focus();
+            } else if (!phone.trim()) {
+                phoneRef.current?.focus();
+            }
+            return;
+        }
 
         // 비밀번호 문자, 숫자, 특수문자 포함 여부 확인 && 길이 8자 이상
         if (!/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+]).{8,}$/.test(password as string)) {
@@ -129,13 +129,13 @@ const SignUpScreen: React.FC = () => {
             return;
         }
 
-        // // 비밀번호 폼과 비밀번호 확인 폼 일치 여부 확인
-        // if (password !== passwordCheck) {
-        //     Alert.alert('비밀번호 불일치', '비밀번호와 비밀번호 확인이 일치하지 않습니다.');
-        //     setPasswordCheck('');
-        //     passwordCheckRef.current?.focus();
-        //     return;
-        // }
+        // 비밀번호 폼과 비밀번호 확인 폼 일치 여부 확인
+        if (password !== passwordCheck) {
+            Alert.alert('비밀번호 불일치', '비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+            setPasswordCheck('');
+            passwordCheckRef.current?.focus();
+            return;
+        }
 
         // 인증번호 확인 여부 확인
         if (!isAuthCodeVerified) {
