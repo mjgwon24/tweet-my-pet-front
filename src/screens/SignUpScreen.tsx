@@ -60,8 +60,11 @@ const SignUpScreen: React.FC = () => {
         try {
             const response = await axiosInstance.post('/send-auth-code',
                 { "phoneNumber": phone });
-            setIsAuthCodeSent(true);
-            Alert.alert('인증번호 전송 성공', '인증번호가 전송되었습니다.');
+
+            if (response.status === 200) {
+                setIsAuthCodeSent(true);
+                Alert.alert('인증번호 전송 성공', '인증번호가 전송되었습니다.');
+            }
         } catch (error) {
             if (error.response) {
                 if (error.response.status === 409) {
@@ -82,13 +85,10 @@ const SignUpScreen: React.FC = () => {
     const handleAuthCodeVerification = async (): Promise<void> => {
         try {
             const response = await axiosInstance.post('/verify-auth-code',
-                { "phoneNumber": phone, "authCode": authCode },
-                { headers: { 'Content-Type': 'application/json'}});
+                { "phoneNumber": phone, "authCode": authCode });
+
             setIsAuthCodeVerified(true);
             Alert.alert('인증 성공', '인증번호 확인이 완료되었습니다');
-
-            // 인증번호 확인 후 인증번호 입력 필드 비활성화
-
         } catch (error) {
             Alert.alert('인증 실패', '인증 번호가 일치하지 않습니다.');
         }
@@ -157,8 +157,10 @@ const SignUpScreen: React.FC = () => {
                 }
             });
 
-            console.log('회원가입 성공: ', response.data);
-            Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.');
+            if (response.status === 200) {
+                console.log('회원가입 성공: ', response.data);
+                Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.');
+            }
         } catch (error) {
             if (error.response) {
                 if (error.response.status === 409) {
