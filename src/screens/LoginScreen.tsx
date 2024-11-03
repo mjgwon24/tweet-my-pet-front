@@ -1,7 +1,20 @@
-import React, { useState } from 'react';
+import React, {useContext, useState} from 'react';
 import {View, Text, TextInput, TouchableOpacity, Alert} from "react-native";
 import axios, {AxiosInstance} from "axios";
 import config from "../config/config";
+import {AuthContext} from "../navigation/AppNavigator";
+import {useNavigation} from "@react-navigation/native";
+import {StackNavigationProp} from "@react-navigation/stack";
+
+//RootStackParamList 타입 정의
+type RootStackParamList = {
+    NonLogMain: undefined; // 비로그인 메인 페이지
+    Main: undefined; // 메인 페이지
+    Login: undefined; // 로그인 페이지
+    SignUp: undefined; // 회원가입 페이지
+};
+
+type NavigationProps = StackNavigationProp<RootStackParamList, 'Login'>;
 
 /**
  * 로그인 화면
@@ -10,6 +23,9 @@ import config from "../config/config";
  * @author 권민지
  */
 const LoginScreen: React.FC = () => {
+    const {setIsLogin} = useContext(AuthContext);
+    const navigation = useNavigation<NavigationProps>();
+
     // 상태 변수 생성
     const [id, setId] = useState<String>('');
     const [password, setPassword] = useState<String>('');
@@ -58,7 +74,8 @@ const LoginScreen: React.FC = () => {
                 });
 
             if (response.status === 200) {
-                Alert.alert('로그인 성공', '환영합니다.');
+                setIsLogin(true);
+                navigation.navigate('Main');
             }
         } catch (error) {
             Alert.alert('로그인 실패', '아이디 또는 비밀번호를 다시한번 확인해주세요.');
