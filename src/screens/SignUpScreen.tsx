@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Alert, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import axios, {AxiosInstance} from 'axios';
 import config from '../config/config';
@@ -37,6 +37,13 @@ const SignUpScreen: React.FC = () => {
         withCredentials: true,
         headers: { 'Content-Type': 'application/json' }
     });
+
+    useEffect(() => {
+        return () => {
+            // 컴포넌트가 언마운트될 때 인증번호 확인 상태 초기화
+            setIsAuthCodeVerified(false);
+        };
+    }, []);
 
     /**
      * 전화번호 인증 버튼 클릭 이벤트
@@ -239,7 +246,7 @@ const SignUpScreen: React.FC = () => {
                     <TouchableOpacity
                         onPress={handlePhoneAuth}
                         className="bg-blue-700 py-3 px-6 rounded-lg hover:bg-blue-800"
-                        disabled={!isAuthCodeVerified}
+                        disabled={isAuthCodeVerified}
                     >
                         <Text className="text-white font-semibold text-center text-base leading-none"
                         >인증</Text>
@@ -258,7 +265,7 @@ const SignUpScreen: React.FC = () => {
                         <TouchableOpacity
                             onPress={handleAuthCodeVerification}
                             className="bg-blue-700 py-3 px-6 rounded-lg hover:bg-blue-800"
-                            disabled={!isAuthCodeVerified}
+                            disabled={isAuthCodeVerified}
                         >
                             <Text className="text-white font-semibold text-center text-base leading-none"
                             >확인</Text>
