@@ -2,7 +2,18 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Alert, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import axios, {AxiosInstance} from 'axios';
 import config from '../config/config';
+import {useNavigation} from "@react-navigation/native";
+import {StackNavigationProp} from "@react-navigation/stack";
 
+// RootStackParamList 타입 정의
+type RootStackParamList = {
+    NonLogMain: undefined; // 비로그인 메인 페이지
+    Main: undefined; // 메인 페이지
+    Login: undefined; // 로그인 페이지
+    SignUp: undefined; // 회원가입 페이지
+};
+
+type NavigationProps = StackNavigationProp<RootStackParamList, 'SignUp'>;
 /**
  * 회원가입 화면
  * @since 2024.10.26
@@ -27,6 +38,8 @@ const SignUpScreen: React.FC = () => {
     const passwordCheckRef = useRef<TextInput>(null);
     const nameRef = useRef<TextInput>(null);
     const phoneRef = useRef<TextInput>(null);
+
+    const navigation = useNavigation<NavigationProps>();
 
     /**
      * Axios 인스턴스 생성
@@ -167,6 +180,8 @@ const SignUpScreen: React.FC = () => {
             if (response.status === 200) {
                 console.log('회원가입 성공: ', response.data);
                 Alert.alert('회원가입 성공', '회원가입이 완료되었습니다.');
+                // 로그인 화면으로 이동
+                navigation.navigate('Login');
             }
         } catch (error) {
             if (error.response) {
