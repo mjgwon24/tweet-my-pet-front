@@ -5,6 +5,7 @@ import config from "../config/config";
 import {AuthContext} from "../navigation/AppNavigator";
 import {useNavigation} from "@react-navigation/native";
 import {StackNavigationProp} from "@react-navigation/stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 //RootStackParamList 타입 정의
 type RootStackParamList = {
@@ -74,6 +75,9 @@ const LoginScreen: React.FC = () => {
                 });
 
             if (response.status === 200) {
+                const token = response.data;
+                await AsyncStorage.setItem('authToken', token);
+                console.log(`authToken: ${token}`);
                 setIsLogin(true);
                 navigation.navigate('Main');
             }
