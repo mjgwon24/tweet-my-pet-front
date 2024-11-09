@@ -1,8 +1,10 @@
-import React from 'react';
-import { Text, TextInput, TouchableOpacity, View, ScrollView, SafeAreaView, StatusBar, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { Text, View, ScrollView, SafeAreaView, StatusBar, Dimensions, Modal, TouchableOpacity } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { MainStackParamList } from '../navigation/MainNavigator'; // MainStackParamList 타입 임포트
-const screenWidth = Dimensions.get('window').width;
+import { RootStackParamList } from '../navigation/AppNavigator';
+import SearchBar from '../components/SearchBar';
+import SearchScreen from '../screens/SearchScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 /**
  * 메인 화면
@@ -10,65 +12,65 @@ const screenWidth = Dimensions.get('window').width;
  * @latest 2024.10.27
  * @author 김진수
  */
+
+const screenWidth = Dimensions.get('window').width;
+
 const MainScreen: React.FC = () => {
-    // useNavigation에 타입을 적용하여 네비게이션 오류 방지
-    const navigation = useNavigation<NavigationProp<MainStackParamList>>();
+    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const [isModalVisible, setModalVisible] = useState(false);
+
+    const openSearchModal = () => setModalVisible(true);
+    const closeSearchModal = () => setModalVisible(false);
 
     return (
-        <SafeAreaView className="flex-1 bg-gray-100">
-            {/* StatusBar 설정: 상단바와 안전하게 분리 */}
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
             <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
 
             <ScrollView contentContainerStyle={{ paddingHorizontal: 16 }}>
-                {/* 검색바 */}
-                <View className="flex-row items-center border border-gray-300 rounded-full p-3 mt-6">
-                    <TextInput
-                        className="flex-1"
-                        placeholder="검색어를 입력하세요"
-                    />
-                </View>
+                <SearchBar onPress={openSearchModal} />
 
-                {/* 주요 공지 사항 및 이벤트 영역 (세로 길이 두 배) */}
-                <View className="bg-gray-200 rounded-lg p-6 mt-6 h-64 justify-center">
-                    <Text className="text-lg text-center text-gray-700">주요 공지 사항, 이벤트 안내</Text>
+                {/* 주요 공지 사항 및 이벤트 영역 */}
+                <View style={{ backgroundColor: '#E0E0E0', borderRadius: 10, padding: 24, marginTop: 16, height: 160, justifyContent: 'center' }}>
+                    <Text style={{ fontSize: 18, textAlign: 'center', color: '#4A4A4A' }}>주요 공지 사항, 이벤트 안내</Text>
                 </View>
 
                 {/* 카테고리 아이콘 섹션 */}
-                <View className="flex-wrap flex-row justify-between mt-8">
+                <View style={{ flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 }}>
                     {['지도', '숙소', '음식점', '카페', '캠핑', '미용실', '병원', '반려용품'].map((category) => (
-                        <TouchableOpacity
-                            key={category}
-                            onPress={() => {
-                                if (category === '지도') {
-                                    navigation.navigate('Map'); // "지도" 버튼 클릭 시 MapScreen으로 이동
-                                }
-                            }}
-                            className="w-1/4 p-2"
-                        >
-                            <View className="bg-gray-200 rounded-lg h-20 justify-center items-center">
-                                <Text className="text-center text-gray-600">{category}</Text>
+                        <View key={category} style={{ width: '23%', padding: 8 }}>
+                            <View style={{ backgroundColor: '#E0E0E0', borderRadius: 10, height: 80, justifyContent: 'center', alignItems: 'center' }}>
+                                <Text style={{ textAlign: 'center', color: '#4A4A4A' }}>{category}</Text>
                             </View>
-                        </TouchableOpacity>
+                        </View>
                     ))}
                 </View>
 
                 {/* 이달의 리뷰 Top 4 */}
-                <View className="flex-row justify-between items-center mt-10 mb-6">
-                    <Text className="text-lg font-semibold text-gray-700">이달의 리뷰 Top 4 모아보기 😎</Text>
-                    <TouchableOpacity>
-                        <Text className="text-green-600">전체보기</Text>
-                    </TouchableOpacity>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, marginBottom: 12 }}>
+                    <Text style={{ fontSize: 18, fontWeight: '600', color: '#4A4A4A' }}>이달의 리뷰 Top 4 모아보기 😎</Text>
                 </View>
 
                 {/* 슬라이드 가능한 리뷰 카드 섹션 */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
                     {[1, 2, 3, 4].map((item) => (
-                        <View key={item} style={{ width: screenWidth * 0.6 }} className="p-2">
-                            <View className="bg-gray-200 rounded-lg h-32"></View>
+                        <View key={item} style={{ width: screenWidth * 0.6, padding: 8 }}>
+                            <View style={{ backgroundColor: '#E0E0E0', borderRadius: 10, height: 128 }} />
                         </View>
                     ))}
                 </ScrollView>
             </ScrollView>
+
+            <Modal visible={isModalVisible} animationType="slide" transparent={false}>
+                <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+                        <TouchableOpacity onPress={closeSearchModal}>
+                            <Ionicons name="arrow-back" size={24} color="black" />
+                        </TouchableOpacity>
+                        <Text style={{ fontSize: 18, marginLeft: 10 }}>검색</Text>
+                    </View>
+                    <SearchScreen />
+                </SafeAreaView>
+            </Modal>
         </SafeAreaView>
     );
 };
