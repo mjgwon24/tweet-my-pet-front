@@ -40,20 +40,17 @@
 
 ## 📁 프로젝트 구조
 
-- **assets/**  
-  앱 리소스(이미지, 아이콘 등)를 포함한 폴더  
-
-- **src/**  
-  주요 소스 코드가 위치한 폴더
-  - `components/`: 재사용 가능한 UI 컴포넌트  
-  - `screens/`: 앱의 주요 화면  
-  - `utils/`: 유틸리티 함수 및 API 통신 로직  
-
-- **App.tsx**  
-  앱 진입점
-
-- **tailwind.config.js**  
-  Tailwind CSS 설정 파일
+```plaintext
+src/
+├── components/        # 재사용 가능한 UI 컴포넌트 (버튼, 카드, 모달 등)
+├── config/            # 앱 설정 관련 파일 (환경 변수, 설정값 등)
+├── image/             # 앱에서 사용하는 이미지 및 아이콘
+├── navigation/        # 앱 내 네비게이션 관련 (탭, 스택 네비게이션 등)
+├── screens/           # 앱의 주요 화면 (홈, 로그인, 설정 등)
+├── utils/             # 유틸리티 함수 및 API 통신 로직
+├── App.tsx            # 앱 진입점 (메인 컴포넌트)
+└── tailwind.config.js # Tailwind CSS 설정 파일
+```
 
 ---
 
