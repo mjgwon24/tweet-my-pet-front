@@ -1,7 +1,7 @@
 
 # 🐾 Tweet My Pet - Frontend  
 
-[![Contributors](https://img.shields.io/badge/contributors-3-brightgreen)](#-기여자-contributors)  
+[![Contributors](https://img.shields.io/badge/contributors-4-brightgreen)](#-기여자-contributors)  
 
 **"트윗마이펫"** 은 반려동물 동반 여행지를 추천받고 공유할 수 있는 모바일 애플리케이션입니다.  
 사용자는 앱을 통해 반려동물 친화적인 장소를 검색하고, 자신만의 경험을 다른 사용자와 공유할 수 있습니다.
