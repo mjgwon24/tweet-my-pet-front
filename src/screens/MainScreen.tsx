@@ -22,6 +22,10 @@ const MainScreen: React.FC = () => {
     const openSearchModal = () => setModalVisible(true);
     const closeSearchModal = () => setModalVisible(false);
 
+    const navigateToMap = () => {
+        navigation.navigate('Map');
+    };
+
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
             <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
@@ -39,7 +43,12 @@ const MainScreen: React.FC = () => {
                     {['지도', '숙소', '음식점', '카페', '캠핑', '미용실', '병원', '반려용품'].map((category) => (
                         <View key={category} style={{ width: '23%', padding: 8 }}>
                             <View style={{ backgroundColor: '#E0E0E0', borderRadius: 10, height: 80, justifyContent: 'center', alignItems: 'center' }}>
+                                <TouchableOpacity
+                                    onPress={category === '지도' ? navigateToMap : undefined} // '지도' 버튼에만 네비게이션 추가
+                                    style={{ backgroundColor: '#E0E0E0', borderRadius: 10, height: 80, justifyContent: 'center', alignItems: 'center' }}
+                                >
                                 <Text style={{ textAlign: 'center', color: '#4A4A4A' }}>{category}</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     ))}
