@@ -1,26 +1,41 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    StyleSheet,
+    ScrollView,
+    Dimensions,
+    Modal,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 
 const screenWidth = Dimensions.get('window').width;
 
-/**
- * 메인 화면
- * @since 2024.11.10
- * @latest 2024.11.10
- * @author 임석진
- */
-
-
 const MapsScreen = () => {
-    const [selectedCategory, setSelectedCategory] = useState(null);
     const [mapCenter, setMapCenter] = useState({ lat: 35.8562, lng: 129.2247 });
-    const [showLocation, setShowLocation] = useState(true);
+    const [selectedRegion, setSelectedRegion] = useState('경주시');
+    const [selectedLocation, setSelectedLocation] = useState('황성동');
+    const [isModalVisible, setModalVisible] = useState(false);
 
-    // 카테고리 선택 핸들러
-    const handleCategorySelect = (category) => {
-        setSelectedCategory(category);
-    };
+    const gyeongbukRegionData = [
+        {
+            name: '경주시',
+            locations: [
+                { name: '성건동', coords: { lat: 35.8428, lng: 129.2117 } },
+                { name: '황성동', coords: { lat: 35.8562, lng: 129.2247 } },
+                { name: '현곡면', coords: { lat: 35.8952, lng: 129.1998 } },
+            ],
+        },
+        {
+            name: '포항시',
+            locations: [
+                { name: '양덕동', coords: { lat: 36.0323, lng: 129.3605 } },
+                { name: '흥해읍', coords: { lat: 36.1046, lng: 129.3492 } },
+            ],
+        },
+        // 더 많은 데이터 추가 가능...
+    ];
 
     const kakaoMapHTML = `
         <!DOCTYPE html>
@@ -29,7 +44,7 @@ const MapsScreen = () => {
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>Kakao Map</title>
-            <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=ac0f83c7a2433e270a24c37513e776e7"></script>
+            <script type="text/javascript" src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=9dab16bb968b4eafb714cbb910e15ac3"></script>
         </head>
         <body>
             <div id="map" style="width: 100%; height: 100vh;"></div>
@@ -41,7 +56,6 @@ const MapsScreen = () => {
                 };
                 var map = new kakao.maps.Map(mapContainer, options);
 
-                // 마커 추가
                 var marker = new kakao.maps.Marker({
                     position: new kakao.maps.LatLng(${mapCenter.lat}, ${mapCenter.lng})
                 });
@@ -51,41 +65,66 @@ const MapsScreen = () => {
         </html>
     `;
 
+    const handleLocationSelect = (region, location) => {
+        const regionData = gyeongbukRegionData.find((r) => r.name === region);
+        const locationData = regionData?.locations.find((l) => l.name === location);
+
+        if (locationData) {
+            setSelectedRegion(region);
+            setSelectedLocation(location);
+            setMapCenter(locationData.coords);
+            setModalVisible(false);
+        }
+    };
+
     return (
         <View style={styles.container}>
+            <TouchableOpacity
+                onPress={() => setModalVisible(true)}
+                style={styles.locationButton}
+            >
+                <Text style={styles.locationButtonText}>
+                    {`${selectedRegion} ${selectedLocation}`}
+                </Text>
+            </TouchableOpacity>
 
-            <View style={styles.topSection}>
-                <TouchableOpacity onPress={() => setShowLocation(!showLocation)} style={styles.locationToggle}>
-                    <Text style={styles.locationText}>
-                        {showLocation ? '경주시 석장동' : '위치 표시 꺼짐'}
-                    </Text>
-                    <Text style={styles.locationIcon}>{showLocation ? '▼' : '▲'}</Text>
-                </TouchableOpacity>
+            <Modal visible={isModalVisible} animationType="slide">
+                <View style={styles.modalContainer}>
+                    <Text style={styles.modalTitle}>경상북도 지역 선택</Text>
+                    <ScrollView>
+                        {gyeongbukRegionData.map((region) => (
+                            <View key={region.name} style={styles.regionContainer}>
+                                <Text style={styles.regionTitle}>{region.name}</Text>
+                                {region.locations.map((location) => (
+                                    <TouchableOpacity
+                                        key={location.name}
+                                        onPress={() => handleLocationSelect(region.name, location.name)}
+                                        style={styles.locationItem}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.locationText,
+                                                selectedRegion === region.name &&
+                                                selectedLocation === location.name &&
+                                                styles.selectedLocationText,
+                                            ]}
+                                        >
+                                            {location.name}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        ))}
+                    </ScrollView>
+                    <TouchableOpacity
+                        onPress={() => setModalVisible(false)}
+                        style={styles.closeButton}
+                    >
+                        <Text style={styles.closeButtonText}>닫기</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-                    {['숙소', '식당', '카페', '캠핑'].map((category) => (
-                        <TouchableOpacity
-                            key={category}
-                            style={styles.categoryButton}
-                            onPress={() => handleCategorySelect(category)}
-                        >
-                            <View style={[
-                                styles.categoryIcon,
-                                selectedCategory === category && styles.selectedCategoryIcon
-                            ]} />
-                            <Text style={[
-                                styles.categoryText,
-                                selectedCategory === category && styles.selectedCategoryText
-                            ]}>
-                                {category}
-                            </Text>
-                        </TouchableOpacity>
-
-                    ))}
-                </ScrollView>
-            </View>
-
-            {/* 지도 표시 */}
             <View style={styles.mapContainer}>
                 <WebView
                     originWhitelist={['*']}
@@ -93,107 +132,66 @@ const MapsScreen = () => {
                     style={{ width: screenWidth, height: '100%' }}
                     mixedContentMode="always"
                 />
-                <TouchableOpacity style={styles.researchButton} onPress={() => console.log('이 지역 재검색')}>
-                    <Text style={styles.researchButtonText}>이 지역 재검색</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.listButton} onPress={() => console.log('목록보기')}>
-                    <Text style={styles.listButtonText}>목록보기</Text>
-                </TouchableOpacity>
             </View>
         </View>
     );
 };
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F5F5F5',
     },
-    topSection: {
+    locationButton: {
         padding: 16,
         backgroundColor: '#FFFFFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
     },
-    locationToggle: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    locationText: {
+    locationButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#333',
-        marginRight: 8,
-    },
-    locationIcon: {
-        fontSize: 12,
-        color: '#333',
-    },
-    categoryScroll: {
-        flexDirection: 'row',
-    },
-    categoryButton: {
-        width: 85,
-        height: 30,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingBottom: 1,
-        paddingHorizontal: 12,
-        borderRadius: 20,
-        backgroundColor: '#E0E0E0',
-        marginRight: 12,
-    },
-    categoryIcon: {
-        width: 16,
-        height: 16,
-        borderRadius: 8,
-        backgroundColor: '#FFF',
-        marginRight: 8,
-    },
-    selectedCategoryIcon: {
-        backgroundColor: '#70756d',
-    },
-    categoryText: {
-        color: '#666',
-        fontSize: 14,
-        marginBottom: 2,
-    },
-    selectedCategoryText: {
-        color: '#666',
-        marginBottom: 1,
-        fontSize: 14,
     },
     mapContainer: {
         flex: 1,
-        position: 'relative',
     },
-    researchButton: {
-        position: 'absolute',
-        top: 20,
-        alignSelf: 'center',
-        paddingVertical: 9,
-        paddingHorizontal: 22,
+    modalContainer: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        padding: 16,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 16,
+    },
+    regionContainer: {
+        marginBottom: 16,
+    },
+    regionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 8,
+    },
+    locationItem: {
+        paddingVertical: 8,
+    },
+    locationText: {
+        fontSize: 14,
+    },
+    selectedLocationText: {
+        color: '#FF5733',
+        fontWeight: 'bold',
+    },
+    closeButton: {
+        padding: 16,
         backgroundColor: '#70756D',
-        borderRadius: 20,
-        zIndex: 1,
+        borderRadius: 8,
+        alignItems: 'center',
     },
-    researchButtonText: {
-        color: 'white',
-        fontSize: 14,
-        marginBottom: 3,
-    },
-    listButton: {
-        position: 'absolute',
-        bottom: 20,
-        alignSelf: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 24,
-        backgroundColor: '#70756d',
-        borderRadius: 20,
-        zIndex: 1,
-    },
-    listButtonText: {
-        color: 'white',
-        fontSize: 14,
-        marginBottom: 1,
+    closeButtonText: {  
+        color: '#FFFFFF',
+        fontSize: 16,
     },
 });
 
