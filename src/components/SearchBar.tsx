@@ -15,6 +15,7 @@ interface SearchBarProps {
     onCancel?: () => void;
     placeholder?: string;
     editable?: boolean;
+    value: string;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onPress, onChangeText, onCancel, placeholder = "검색어를 입력하세요", editable = true }) => {
