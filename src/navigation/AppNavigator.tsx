@@ -53,7 +53,7 @@ const AppNavigator: React.FC = () => {
     return (
         <AuthContext.Provider value={{ isLogin, setIsLogin }}>
             <NavigationContainer>
-                <Stack.Navigator initialRouteName="NonLoginMain">
+                <Stack.Navigator id={undefined} initialRouteName="NonLoginMain">
                     <Stack.Screen name="NonLoginMain" component={NonLoginMainScreen} options={{ title: '비로그인 메인' }} />
                     <Stack.Screen name="Login" component={LoginScreen} options={{ title: '로그인' }} />
                     <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: '회원가입' }} />
