@@ -17,7 +17,7 @@ type NavigationProps = StackNavigationProp<RootStackParamList, 'SignUp'>;
 /**
  * 회원가입 화면
  * @since 2024.10.26
- * @latest 2024.11.02
+ * @latest 2024.12.10
  * @author 권민지
  */
 const SignUpScreen: React.FC = () => {
@@ -26,6 +26,7 @@ const SignUpScreen: React.FC = () => {
     const [password, setPassword] = useState<String>('');
     const [passwordCheck, setPasswordCheck] = useState<String>('');
     const [name, setName] = useState<String>('');
+    const [email, setEmail] = useState<String>('');
     const [phone, setPhone] = useState<String>('');
     const [isTouched, setIsTouched] = useState<boolean>(false);
     const [authCode, setAuthCode] = useState<String>('');
@@ -37,6 +38,7 @@ const SignUpScreen: React.FC = () => {
     const passwordRef = useRef<TextInput>(null);
     const passwordCheckRef = useRef<TextInput>(null);
     const nameRef = useRef<TextInput>(null);
+    const emailRef = useRef<TextInput>(null);
     const phoneRef = useRef<TextInput>(null);
 
     const navigation = useNavigation<NavigationProps>();
@@ -122,7 +124,7 @@ const SignUpScreen: React.FC = () => {
         setIsTouched(true);
 
         // 입력 필드 유효성 검증
-        if (!id.trim() || !password.trim() || !name.trim() || !phone.trim()) {
+        if (!id.trim() || !password.trim() || !name.trim() || !email.trim() || !phone.trim()) {
             Alert.alert('입력폼 빈칸 존재', '모든 입력폼을 채워주세요.');
 
             // 빈 필드에 포커스
@@ -134,6 +136,8 @@ const SignUpScreen: React.FC = () => {
                 passwordCheckRef.current?.focus();
             } else if (!name.trim()) {
                 nameRef.current?.focus();
+            } else if (!email.trim()) {
+                emailRef.current?.focus();
             } else if (!phone.trim()) {
                 phoneRef.current?.focus();
             }
@@ -170,6 +174,7 @@ const SignUpScreen: React.FC = () => {
                 "loginId": id,
                 "password": password,
                 "name": name,
+                "email": email,
                 "phoneNumber": phone
             }, {
                 headers: {
@@ -245,7 +250,13 @@ const SignUpScreen: React.FC = () => {
                     placeholder="이름"
                     value={name as string}
                     onChangeText={setName}
-                    secureTextEntry
+                />
+                <TextInput
+                    ref = {emailRef}
+                    className={`border ${getBorderColorClass(name as string)} rounded-lg p-3 mb-4`}
+                    placeholder="이메일"
+                    value={email as string}
+                    onChangeText={setEmail}
                 />
                 <View className="flex-row justify-between mb-6 w-full">
                     <TextInput
@@ -256,7 +267,6 @@ const SignUpScreen: React.FC = () => {
                         onChangeText={setPhone}
                         keyboardType={'phone-pad'}
                         editable={!isAuthCodeVerified}
-                        secureTextEntry
                     />
                     <TouchableOpacity
                         onPress={handlePhoneAuth}
