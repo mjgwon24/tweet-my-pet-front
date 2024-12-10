@@ -29,11 +29,13 @@ const BottomTabNavigator: React.FC = () => {
                 tabBarActiveTintColor: 'black',
                 tabBarInactiveTintColor: 'gray',
             })}
-        >
+         id={undefined}>
             <Tab.Screen name="Home" component={MainScreen} options={{ tabBarLabel: '홈' }} />
             <Tab.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: '검색' }} />
             <Tab.Screen name="Map" component={MapScreen} options={{ tabBarLabel: '지도' }} />
         </Tab.Navigator>
+
+
     );
 };
 
