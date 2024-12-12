@@ -67,7 +67,7 @@ const AppNavigator: React.FC = () => {
                     {/* SearchScreen과 MapScreen을 독립적으로 추가 */}
                     <Stack.Screen name="Search" component={SearchScreen} options={{ title: '검색' }} />
                     <Stack.Screen name="Map" component={MapScreen} options={{ title: '지도' }} />
-                    <Stack.Screen name="Accommodation" component={StoreListScreen} options={{ title: '숙소' }} />
+                    <Stack.Screen name="Accommodation" component={StoreListScreen} options={{ title: '매장 리스트' }} />
                 </Stack.Navigator>
             </NavigationContainer>
         </AuthContext.Provider>
