@@ -26,6 +26,10 @@ const MainScreen: React.FC = () => {
         navigation.navigate('Map');
     };
 
+    const navigateToAccommodation = () => {
+        navigation.navigate('Accommodation');
+    };
+
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
             <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
@@ -44,7 +48,9 @@ const MainScreen: React.FC = () => {
                         <View key={category} style={{ width: '23%', padding: 8 }}>
                             <View style={{ backgroundColor: '#E0E0E0', borderRadius: 10, height: 80, justifyContent: 'center', alignItems: 'center' }}>
                                 <TouchableOpacity
-                                    onPress={category === '지도' ? navigateToMap : undefined} // '지도' 버튼에만 네비게이션 추가
+                                    onPress={category === '지도' ? navigateToMap
+                                        : category === '숙소' ? navigateToAccommodation
+                                        : undefined}
                                     style={{ backgroundColor: '#E0E0E0', borderRadius: 10, height: 80, justifyContent: 'center', alignItems: 'center' }}
                                 >
                                 <Text style={{ textAlign: 'center', color: '#4A4A4A' }}>{category}</Text>

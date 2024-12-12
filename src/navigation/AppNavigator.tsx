@@ -8,6 +8,7 @@ import NonLoginMainScreen from '../screens/NonLoginMainScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import SearchScreen from '../screens/SearchScreen';
 import MapScreen from '../screens/MapScreen';
+import StoreListScreen from '../screens/StoreListScreen';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DevLoadingView from "expo/build/environment/DevLoadingView";
 
@@ -19,6 +20,7 @@ export type RootStackParamList = {
     KakaoLogin: undefined;
     Search: undefined;
     Map: undefined;
+    Accommodation: undefined;
 };
 
 // login 여부 관리 Context
@@ -65,6 +67,7 @@ const AppNavigator: React.FC = () => {
                     {/* SearchScreen과 MapScreen을 독립적으로 추가 */}
                     <Stack.Screen name="Search" component={SearchScreen} options={{ title: '검색' }} />
                     <Stack.Screen name="Map" component={MapScreen} options={{ title: '지도' }} />
+                    <Stack.Screen name="Accommodation" component={StoreListScreen} options={{ title: '숙소' }} />
                 </Stack.Navigator>
             </NavigationContainer>
         </AuthContext.Provider>
