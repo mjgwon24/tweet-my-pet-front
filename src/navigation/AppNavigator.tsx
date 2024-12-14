@@ -11,6 +11,7 @@ import MapScreen from '../screens/MapScreen';
 import StoreListScreen from '../screens/StoreListScreen';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DevLoadingView from "expo/build/environment/DevLoadingView";
+import NaverLogin from "../screens/NaverLogin";
 
 export type RootStackParamList = {
     NonLoginMain: undefined;
@@ -21,6 +22,7 @@ export type RootStackParamList = {
     Search: undefined;
     Map: undefined;
     Accommodation: undefined;
+    NaverLogin: { url: string };
 };
 
 // login 여부 관리 Context
@@ -60,6 +62,7 @@ const AppNavigator: React.FC = () => {
                     <Stack.Screen name="Login" component={LoginScreen} options={{ title: '로그인' }} />
                     <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: '회원가입' }} />
                     <Stack.Screen name="KakaoLogin" component={KakaoLogin} options={{ title: '카카오 로그인' }} />
+                    <Stack.Screen name="NaverLogin" component={NaverLogin} options={{title: '네이버 로그인'}} />
 
                     {/* BottomTabNavigator를 포함하여 Main, Search, Map 등의 화면을 관리 */}
                     <Stack.Screen name="Main" component={BottomTabNavigator} options={{ headerShown: false }} />
