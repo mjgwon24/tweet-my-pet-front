@@ -164,6 +164,14 @@ const NonLoginMainScreen: React.FC = () => {
                 </TouchableOpacity>
             </View>
 
+            <TouchableOpacity
+                onPress={() => navigation.navigate('Main')}
+                style={{ backgroundColor: '#4CAF50', paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10, marginBottom: 10 }}
+            >
+                <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' }}>메인 화면으로 이동</Text>
+            </TouchableOpacity>
+
+
             {/* 로그아웃 버튼 */}
             <TouchableOpacity
                 onPress={handleLogout}
