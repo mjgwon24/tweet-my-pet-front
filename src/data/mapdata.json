@@ -1,0 +1,75 @@
+[
+  {
+    "name": "경주시",
+    "locations": [
+      { "name": "성건동", "coords": { "lat": 35.8428, "lng": 129.2117 } },
+      { "name": "황성동", "coords": { "lat": 35.8562, "lng": 129.2247 } },
+      { "name": "현곡면", "coords": { "lat": 35.8952, "lng": 129.1998 } }
+    ]
+  },
+  {
+    "name": "포항시",
+    "locations": [
+      { "name": "양덕동", "coords": { "lat": 36.0323, "lng": 129.3605 } },
+      { "name": "흥해읍", "coords": { "lat": 36.1046, "lng": 129.3492 } }
+    ]
+  },
+  {
+    "name": "구미시",
+    "locations": [
+      { "name": "원평동", "coords": { "lat": 36.1235, "lng": 128.3451 } },
+      { "name": "봉곡동", "coords": { "lat": 36.1197, "lng": 128.3385 } },
+      { "name": "선산읍", "coords": { "lat": 36.2356, "lng": 128.3063 } }
+    ]
+  },
+  {
+    "name": "안동시",
+    "locations": [
+      { "name": "운안동", "coords": { "lat": 36.5645, "lng": 128.7253 } },
+      { "name": "옥동", "coords": { "lat": 36.5615, "lng": 128.7271 } },
+      { "name": "임동면", "coords": { "lat": 36.6348, "lng": 128.9241 } }
+    ]
+  },
+  {
+    "name": "상주시",
+    "locations": [
+      { "name": "상주읍", "coords": { "lat": 36.4152, "lng": 128.1598 } },
+      { "name": "사벌국면", "coords": { "lat": 36.4872, "lng": 128.1456 } }
+    ]
+  },
+  {
+    "name": "영천시",
+    "locations": [
+      { "name": "망정동", "coords": { "lat": 35.9694, "lng": 128.9423 } },
+      { "name": "금호읍", "coords": { "lat": 35.9632, "lng": 128.8817 } }
+    ]
+  },
+  {
+    "name": "문경시",
+    "locations": [
+      { "name": "점촌동", "coords": { "lat": 36.5864, "lng": 128.1877 } },
+      { "name": "마성면", "coords": { "lat": 36.6892, "lng": 128.2529 } }
+    ]
+  },
+  {
+    "name": "영주시",
+    "locations": [
+      { "name": "휴천동", "coords": { "lat": 36.8067, "lng": 128.6308 } },
+      { "name": "풍기읍", "coords": { "lat": 36.8701, "lng": 128.5381 } }
+    ]
+  },
+  {
+    "name": "의성군",
+    "locations": [
+      { "name": "의성읍", "coords": { "lat": 36.3527, "lng": 128.6946 } },
+      { "name": "봉양면", "coords": { "lat": 36.2903, "lng": 128.7229 } }
+    ]
+  },
+  {
+    "name": "영덕군",
+    "locations": [
+      { "name": "영덕읍", "coords": { "lat": 36.4162, "lng": 129.3657 } },
+      { "name": "강구면", "coords": { "lat": 36.3924, "lng": 129.4002 } }
+    ]
+  }
+]
