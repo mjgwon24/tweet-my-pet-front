@@ -98,6 +98,9 @@ yarn-error.*
 # CMake
 cmake-build-*/
 
+# src/config 폴더 내 config.js 무시
+src/config/config.js
+
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
 
