@@ -1,34 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Alert, Linking } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import mapData from '../data/mapdata.json';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import * as Location from 'expo-location';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
 
+
 const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 
 const MapsScreen = () => {
     const navigation = useNavigation<NavigationProp>();
-    const [mapCenter, setMapCenter] = useState({ lat: 35.8562, lng: 129.2247 });
-    const [selectedRegion, setSelectedRegion] = useState('');
-    const [selectedLocation, setSelectedLocation] = useState('');
-    const [searchText, setSearchText] = useState('');
-    const [activeFilter, setActiveFilter] = useState('');
+    const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+    const [selectedLocation] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    const handleLocationSelect = (region, location) => {
-        const regionData = mapData.find((r) => r.name === region);
-        const locationData = regionData?.locations.find((l) => l.name === location);
+    const getUserLocation = async () => {
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Error', '위치 권한이 필요합니다.');
+                return;
+            }
 
-        if (locationData) {
-            setSelectedRegion(region);
-            setSelectedLocation(location);
-            setMapCenter(locationData.coords);
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.High,
+            });
+
+            setMapCenter({
+                lat: location.coords.latitude,
+                lng: location.coords.longitude,
+            });
+        } catch (error) {
+            Alert.alert('Error', '위치 정보를 가져올 수 없습니다.');
+        } finally {
+            setLoading(false); // 로딩 종료
         }
     };
+
+    useEffect(() => {
+        getUserLocation();
+    }, []);
 
     const filterOptions: { label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
         { label: '숙소', icon: 'hotel' },
@@ -37,6 +53,8 @@ const MapsScreen = () => {
         { label: '캠핑', icon: 'terrain' },
     ];
 
+
+
     const openKakaoMap = () => {
         const kakaoMapURL = `https://map.kakao.com/link/to/${encodeURIComponent(selectedLocation)},${mapCenter.lat},${mapCenter.lng}`;
         Linking.openURL(kakaoMapURL).catch((err) =>
@@ -44,7 +62,8 @@ const MapsScreen = () => {
         );
     };
 
-    const kakaoMapHTML = `
+    const kakaoMapHTML = mapCenter
+        ? `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -96,162 +115,54 @@ const MapsScreen = () => {
     </script>
 </body>
 </html>
-`;
+` : '';
+
 
     return (
-        <View style={styles.container}>
-            {/* Kakao Map */}
-            <WebView originWhitelist={['*']} source={{ html: kakaoMapHTML }} style={{ flex: 1 }} />
+        <View className="flex-1">
+            <WebView originWhitelist={['*']} source={{ html: kakaoMapHTML }} className="flex-1" />
 
-            {/* Search Bar */}
+                <TouchableOpacity
+                    className="absolute top-8 left-5 right-5 flex-row bg-white rounded-md px-4 py-2 shadow-lg"
+                    onPress={() => navigation.navigate('MapSearchScreen')}
+                    style={{ width: screenWidth * 0.74 }}
+                >
+                    <Ionicons name="search" size={20} color="gray" />
+                    <Text className="flex-1 text-gray-400 text-base ml-2">장소를 검색하세요</Text>
+                    <Ionicons name="mic-outline" size={20} color="gray" />
+                </TouchableOpacity>
+
             <TouchableOpacity
-                style={styles.searchBarContainer}
-                onPress={() => navigation.navigate('MapSearchScreen')}
+                className="absolute top-8 right-4 bg-indigo-600 rounded-full items-center justify-center p-2"
+                style={{ width: screenWidth * 0.13, height: screenWidth * 0.13 }}
+                onPress={openKakaoMap}
             >
-                <View style={styles.searchBar}>
-                    <Ionicons name="search" size={20} color="gray" style={styles.searchIcon} />
-                    <Text style={styles.searchPlaceholder}>장소를 검색하세요</Text>
-                    <Ionicons name="mic-outline" size={20} color="gray" style={styles.voiceIcon} />
-                </View>
+                <MaterialIcons name="turn-right" size={20} color="white" />
+                <Text className="text-white text-xs mt-1">길찾기</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.routeButton} onPress={openKakaoMap}>
-                <MaterialIcons name="turn-right" size={18} color="white" />
-                <Text style={styles.routeButtonText}>길찾기</Text>
-            </TouchableOpacity>
-
-            {/* Filter Buttons */}
-            <View style={styles.filterContainer}>
-                {filterOptions.map((filter) => (
+            {/* 필터 버튼 */}
+            <View className="absolute top-24 left-5 right-5 flex-row gap-4"
+                  style={{ width: screenWidth * 0.13, height: screenWidth * 0.13 }}>
+                {['숙소', '식당', '카페', '캠핑'].map((label, idx) => (
                     <TouchableOpacity
-                        key={filter.label}
-                        style={[
-                            styles.filterButton,
-                            activeFilter === filter.label && styles.activeFilterButton, // 활성화 상태 스타일 적용
-                        ]}
-                        onPress={() => setActiveFilter(filter.label === activeFilter ? '' : filter.label)}
+                        key={idx}
+                        className="flex-row items-center justify-center border border-indigo-600 bg-white rounded-lg px-2 py-1"
                     >
-                        <MaterialIcons
-                            name={filter.icon}
-                            size={16}
-                            color={activeFilter === filter.label ? '#fff' : '#3D47AA'} // 아이콘 색상
-                        />
-                        <Text
-                            style={[
-                                styles.filterText,
-                                activeFilter === filter.label && styles.activeFilterText, // 활성화 상태 스타일 적용
-                            ]}
-                        >
-                            {filter.label}
-                        </Text>
+                        <MaterialIcons name="location-on" size={16} color="#3D47AA" />
+                        <Text className="ml-1 text-indigo-600 text-sm">{label}</Text>
                     </TouchableOpacity>
                 ))}
             </View>
 
-
-
-
-
             {/* 전체보기 버튼 */}
             <TouchableOpacity
-                style={styles.overviewButton}
-                onPress={() => navigation.navigate('Accommodation')}
+                className="absolute bottom-5 self-center bg-white rounded-lg shadow-md px-5 py-2"
             >
-                <Text style={styles.overviewButtonText}>전체보기</Text>
+                <Text className="text-indigo-600 font-bold text-lg">전체보기</Text>
             </TouchableOpacity>
         </View>
     );
 };
-const styles = StyleSheet.create({
-    container: { flex: 1 },
-    searchBarContainer: {
-        position: 'absolute',
-        top: 30,
-        left: 20,
-        right: 20,
-    },
-    searchBar: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        elevation: 5,
-        height: 45,
-        width: 300,
-    },
-    searchPlaceholder: {
-        flex: 1,
-        fontSize: 16,
-        color: '#aaa',
-    },
-    searchIcon: { marginRight: 8 },
-    voiceIcon: { marginLeft: 8 },
-
-    searchInput: { flex: 1, fontSize: 16 },
-    filterContainer: {
-        position: 'absolute',
-        top: 85,
-        left: 10,
-        right: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    filterButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: 65,
-        height: 35,
-        paddingVertical: 8,
-        paddingHorizontal: 10,
-        borderRadius: 8,
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#3D47AA',
-        marginLeft: 13,
-
-    },
-    filterText: {
-        marginLeft: 5,
-        color: '#000',
-        fontSize: 11,
-    },
-    activeFilterButton: {
-        backgroundColor: '#3D47AA',
-    },
-    activeFilterText: {
-        color: '#fff',
-    },
-    routeButton: {
-        position: 'absolute',
-        top: 30,
-        right: 10,
-        backgroundColor: '#3D47AA',
-        borderRadius: 20,
-        padding: 10,
-        width: 56,
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-    },
-    routeButtonText: { fontSize: 10,color: '#fff',marginBottom: 1},
-    overviewButton: {
-        position: 'absolute',
-        bottom: 20,
-        alignSelf: 'center',
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        padding: 10,
-
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-
-        elevation: 5,
-
-    },
-    overviewButtonText: { color: '#3D47AA', fontSize: 16 },
-});
 
 export default MapsScreen;
