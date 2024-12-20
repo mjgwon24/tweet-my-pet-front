@@ -1,12 +1,27 @@
-import React from 'react';
-import {Image, ScrollView, Text, View} from "react-native";
+import React, {useState} from 'react';
+import {Image, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import { Dimensions } from 'react-native';
+import {MaterialIcons} from "@expo/vector-icons";
 
 const StoreListScreen = () => {
+    const [activeFilter, setActiveFilter] = useState("숙소");
     const screenWidth = Dimensions.get('window').width;
     const screenHeight = Dimensions.get('window').height;
     const contentWidth = screenWidth - 152;
     const lineWidth = screenWidth - 40;
+
+    const filterOptions: { label: string; icon: keyof typeof MaterialIcons.glyphMap }[] = [
+        { label: '숙소', icon: 'hotel' },
+        { label: '식당', icon: 'restaurant' },
+        { label: '카페', icon: 'coffee' },
+        { label: '캠핑', icon: 'terrain' },
+    ];
+
+    // 상단 메뉴 버튼 클릭 이벤트
+    const handleButtonClick = (filter) => {
+        setActiveFilter(filter);
+    }
+
 
     return (
         <View className="flex flex-col items-center">
@@ -25,30 +40,20 @@ const StoreListScreen = () => {
                 </View>
 
                 <View className="flex flex-row items-center gap-2.5 py-1">
-                    <View className="flex-row items-center justify-center bg-[#3D47AA] rounded-[6px] w-[65px] h-[30px]">
-                        <Image className="w-[10px] h-[10px] mr-1.5"
-                               source={require("../images/facilities/accommodation-white.png")} />
-                        <Text className="text-white font-bold">숙소</Text>
-                    </View>
-
-                    <View className="flex-row items-center justify-center bg-[#F5F5F5] rounded-[6px] w-[65px] h-[30px]">
-                        <Image className="w-[12px] h-[12px] mr-1.5"
-                               source={require("../images/facilities/restaurant-blue.png")} />
-                        <Text className="font-semibold">식당</Text>
-                    </View>
-
-                    <View className="flex flex-row items-center justify-center bg-[#F5F5F5] rounded-[6px] w-[65px] h-[30px]">
-                        <Image className="w-[10px] h-[10px] mr-1.5"
-                               source={require("../images/facilities/cafe-blue.png")} />
-                        <Text className="font-semibold">카페</Text>
-                    </View>
-
-                    <View className="flex flex-row items-center justify-center bg-[#F5F5F5] rounded-[6px] w-[65px] h-[30px]">
-                        <Image className="w-[10px] h-[10px] mr-1.5"
-                               style={{ margin: 0, padding: 0 }}
-                               source={require("../images/facilities/camping-blue.png")} />
-                        <Text className="font-semibold">캠핑</Text>
-                    </View>
+                    {filterOptions.map((filter) => (
+                        <TouchableOpacity
+                            key={filter.label}
+                            activeOpacity={1}
+                            onPress={() => setActiveFilter(filter.label)}
+                            className={`flex-row items-center justify-center bg-[${activeFilter === filter.label ? "#3D47AA" : "#F5F5F5"}] rounded-[6px] w-[65px] h-[30px]`}>
+                            <MaterialIcons
+                                name={filter.icon} size={16}
+                                color={activeFilter === filter.label ? "#FFFFFF" : "#3D47AA"} />
+                            <Text className={`text-${activeFilter === filter.label ? "white" : ""} font-bold ml-1.5`}>
+                                {filter.label}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
             </View>
 
