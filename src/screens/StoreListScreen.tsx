@@ -185,7 +185,7 @@ const StoreListScreen = () => {
                     {["ACCOMMODATION", "CAMPSITE"].includes(item.storeCategory) && (
                         <View className="flex flex-col items-end">
                             <Text className="font-semibold text-[14px] text-[#303030] pb-0.5">1박</Text>
-                            <Text className="font-bold text-[17px] pb-0.5">30,000원</Text>
+                            <Text className="font-bold text-[17px] pb-0.5">{new Intl.NumberFormat('ko-KR').format(item.lowerPrice || 0)}원</Text>
                         </View>
                     )}
                 </View>
