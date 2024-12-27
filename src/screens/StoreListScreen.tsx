@@ -6,16 +6,18 @@ import clsx from 'clsx';
 import config from '../config/config';
 import axios, {AxiosInstance} from "axios";
 import {ActivityIndicator} from "nativewind/dist/preflight";
-import {resolve} from "react-native-svg/lib/typescript/lib/resolve";
+import * as Location from 'expo-location';
 
 const StoreListScreen = () => {
-    const [activeFilter, setActiveFilter] = useState('숙소');
-    const [activeSort, setActiveSort] = useState('거리순');
-    const [sortToggle, setSortToggle] = useState(false);
-    const [storeList, setStoreList] = useState([]);
-    const [pageNumber, setPageNumber] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
+    const [activeFilter, setActiveFilter] = useState<string>('숙소');
+    const [activeSort, setActiveSort] = useState<string>('거리순');
+    const [sortToggle, setSortToggle] = useState<boolean>(false);
+    const [storeList, setStoreList] = useState<any[]>([]);
+    const [pageNumber, setPageNumber] = useState<number>(0);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [hasMore, setHasMore] = useState<boolean>(true);
+    const [userPosition, setUserPosition] = useState<{ pointX: number, pointY: number }>({ pointX: 0, pointY: 0 });
+    const [locationName, setLocationName] = useState<string>('경주시 석장동');
 
     const screenWidth = Dimensions.get('window').width;
     const screenHeight = Dimensions.get('window').height;
@@ -58,6 +60,28 @@ const StoreListScreen = () => {
         return selected ? selected.value : 'distance';
     }
 
+    // 사용자 위치 정보 반환
+    const getUserLocation = async () => {
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                console.error('위치 권한이 필요합니다.');
+                return;
+            }
+
+            const location = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.High,
+            });
+
+            setUserPosition({
+                pointX: location.coords.longitude,
+                pointY: location.coords.latitude,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     // 가게 목록 데이터 반환
     const fetchStoreList = useCallback(async () => {
         console.log("=== [5] fetchStoreList called ===");
@@ -68,13 +92,12 @@ const StoreListScreen = () => {
 
         try {
             console.log("=== [6] api call ===");
-
             const response = await axiosInstance.get('/api/store/list', {
                 params: {
                     "storeCategory": category,
                     "sort": sort,
-                    "pointX": 27.1221,
-                    "pointY": 36.1123,
+                    "pointX": userPosition.pointX,
+                    "pointY": userPosition.pointY,
                     pageNumber,
                     "size": 5
                 }
@@ -104,7 +127,7 @@ const StoreListScreen = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [activeFilter, activeSort, pageNumber, isLoading, hasMore]);
+    }, [activeFilter, activeSort, pageNumber, isLoading, hasMore, userPosition]);
 
     // const handleEndReached = useCallback(() => {
     //     console.log("=== handleEndReached called ===");
@@ -116,6 +139,7 @@ const StoreListScreen = () => {
     // 가게 목록 데이터 초기화
     const resetStoreList = useCallback(() => {
         console.log("=== [3] resetStoreList called ===");
+        getUserLocation();
         setStoreList([]);
         setPageNumber(0);
         setHasMore(true);
@@ -168,6 +192,7 @@ const StoreListScreen = () => {
         </View>
     );
 
+    // 정렬 헤더 렌더링
     const renderListHeader = () => (
         <View className="flex flex-row justify-end w-full py-4 px-5">
             <TouchableOpacity className="flex flex-row items-center gap-0.5"
@@ -178,6 +203,7 @@ const StoreListScreen = () => {
         </View>
     );
 
+    // 로딩 푸터 렌더링
     const renderListFooter = () => {
         if (!isLoading) return null;
 
@@ -202,7 +228,7 @@ const StoreListScreen = () => {
                     </View>
 
                     <View className="flex flex-row items-center gap-0.5">
-                        <Text className="font-bold text-[20px]">경주시 석장동</Text>
+                        <Text className="font-bold text-[20px]">{locationName}</Text>
                         <Image className="w-[15px] h-[15px]" source={require("../images/common/bottom-toggle-black.png")}/>
                     </View>
                 </View>
