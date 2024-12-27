@@ -176,6 +176,7 @@ const StoreListScreen = () => {
                         <View className="flex flex-row gap-0.5 pb-1">
                             <Text className="font-bold">⭐ {item.rating || "0.0"}</Text>
                             <Text className="font-semibold text-[13px] text-[#3D3D3D]">({item.reviewCount || 0})</Text>
+                            <Text className="font-semibold text-[13px] text-[#3D3D3D]">· {item.distanceSpacing + "km" || "0km"}</Text>
                         </View>
                         <Text className="font-semibold text-[14px] text-[#70756D] pb-0.5">{item.location || ""}</Text>
                         <Text className="font-semibold text-[14px] text-[#70756D] pb-0.5">{item.feature || ""}</Text>
