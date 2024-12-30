@@ -47,7 +47,7 @@ const NonLoginMainScreen: React.FC = () => {
     // [기존] 로그아웃 핸들러
     const handleLogout = async () => {
         try {
-            const response = await axios.post(`${config.baseURL}auth/logout`, {
+            const response = await axios.post(`${config.baseURL}/logout`, {
                 accessToken,
             });
 
@@ -163,6 +163,14 @@ const NonLoginMainScreen: React.FC = () => {
                     <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "bold" }}>네이버로 간편가입</Text>
                 </TouchableOpacity>
             </View>
+
+            <TouchableOpacity
+                onPress={() => navigation.navigate('Main')}
+                style={{ backgroundColor: '#4CAF50', paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10, marginBottom: 10 }}
+            >
+                <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' }}>메인 화면으로 이동</Text>
+            </TouchableOpacity>
+
 
             {/* 로그아웃 버튼 */}
             <TouchableOpacity
