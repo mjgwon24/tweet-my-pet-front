@@ -47,7 +47,7 @@ const NonLoginMainScreen: React.FC = () => {
     // [기존] 로그아웃 핸들러
     const handleLogout = async () => {
         try {
-            const response = await axios.post(`${config.baseURL}auth/logout`, {
+            const response = await axios.post(`${config.baseURL}/logout`, {
                 accessToken,
             });
 

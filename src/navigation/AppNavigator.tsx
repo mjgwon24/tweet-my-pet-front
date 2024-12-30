@@ -86,3 +86,6 @@ const fetchLoginStatus = async () => {
 }
 
 export default AppNavigator;
+
+export class StackNavigationProp {
+}
