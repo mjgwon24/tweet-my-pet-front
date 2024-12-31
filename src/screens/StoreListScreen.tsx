@@ -168,7 +168,7 @@ const StoreListScreen = () => {
     const renderStoreItem = ({item}) => (
         <View className="flex flex-col items-center px-5">
             <View className="flex flex-row gap-3">
-                <View className="bg-gray-200 rounded-xl w-[100px] h-[100px]"></View>
+                <Image className="w-[100px] h-[100px] rounded-xl" source={{uri : item.thumbPath}}/>
 
                 <View className="flex flex-col" style={{ width: contentWidth }}>
                     <View className="flex flex-col items-start">
