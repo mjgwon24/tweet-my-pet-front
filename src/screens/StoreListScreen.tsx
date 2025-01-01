@@ -77,6 +77,21 @@ const StoreListScreen = () => {
                 pointX: location.coords.longitude,
                 pointY: location.coords.latitude,
             });
+
+            try {
+                const response = await axios.get(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${userPosition.pointX}&y=${userPosition.pointY}`, {
+                    headers: {
+                        Authorization: `KakaoAK ${config.kakaoAPIKey}`
+                    }
+                });
+
+                const { region_1depth_name, region_2depth_name, region_3depth_name } = response.data.documents[0].address;
+
+                setLocationName(`${region_1depth_name} ${region_2depth_name} ${region_3depth_name}`);
+            } catch (error) {
+                setLocationName('경주시 석장동 아닌데..');
+                console.error(error);
+            }
         } catch (error) {
             console.error(error);
         }
@@ -137,13 +152,13 @@ const StoreListScreen = () => {
     // }, [hasMore, fetchStoreList]);
 
     // 가게 목록 데이터 초기화
-    const resetStoreList = useCallback(() => {
+    const resetStoreList = useCallback(async () => {
         console.log("=== [3] resetStoreList called ===");
-        getUserLocation();
+        if (userPosition.pointX === 0 && userPosition.pointY === 0) await getUserLocation();
         setStoreList([]);
         setPageNumber(0);
         setHasMore(true);
-    }, []);
+    }, [userPosition]);
 
     // 가게 목록 초기화 함수 호출
     const initializeStoreList = useCallback(async () => {
@@ -159,10 +174,10 @@ const StoreListScreen = () => {
 
     useEffect(() => {
         console.log("=== [4] fetchStoreList useEffect called ===");
-        if (!isLoading && hasMore) {
+        if (!isLoading && hasMore && userPosition.pointX !== 0 && userPosition.pointY !== 0) {
             fetchStoreList();
         }
-    }, [hasMore, fetchStoreList]);
+    }, [hasMore, fetchStoreList, userPosition]);
 
     // 매장 개별 렌더링
     const renderStoreItem = ({item}) => (
@@ -236,7 +251,7 @@ const StoreListScreen = () => {
                     </View>
                 </View>
 
-                <View className="flex flex-row items-center gap-2.5 py-1">
+                <View className="flex flex-row items-center gap-4 py-1">
                     {filterOptions.map((filter) => (
                         <TouchableOpacity
                             key={filter.label}
