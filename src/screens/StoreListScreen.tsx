@@ -62,6 +62,7 @@ const StoreListScreen = () => {
 
     // 사용자 위치 정보 반환
     const getUserLocation = async () => {
+        console.log("=== [4] getUserLocation called ===");
         try {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
@@ -77,25 +78,28 @@ const StoreListScreen = () => {
                 pointX: location.coords.longitude,
                 pointY: location.coords.latitude,
             });
-
-            try {
-                const response = await axios.get(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${userPosition.pointX}&y=${userPosition.pointY}`, {
-                    headers: {
-                        Authorization: `KakaoAK ${config.kakaoAPIKey}`
-                    }
-                });
-
-                const { region_1depth_name, region_2depth_name, region_3depth_name } = response.data.documents[0].address;
-
-                setLocationName(`${region_1depth_name} ${region_2depth_name} ${region_3depth_name}`);
-            } catch (error) {
-                setLocationName('경주시 석장동 아닌데..');
-                console.error(error);
-            }
         } catch (error) {
             console.error(error);
         }
     }
+
+    // 사용자 위치명 반환
+    const getUserLocationName = async () => {
+        try {
+            const response = await axios.get(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${userPosition.pointX}&y=${userPosition.pointY}`, {
+                headers: {
+                    Authorization: `KakaoAK ${config.kakaoAPIKey}`
+                }
+            });
+
+            const { region_1depth_name, region_2depth_name, region_3depth_name } = response.data.documents[0].address;
+
+            setLocationName(`${region_1depth_name} ${region_2depth_name} ${region_3depth_name}`);
+        } catch (error) {
+            setLocationName('경주시 석장동 아닌데..');
+            console.error(error);
+        }
+    };
 
     // 가게 목록 데이터 반환
     const fetchStoreList = useCallback(async () => {
@@ -106,7 +110,7 @@ const StoreListScreen = () => {
         const sort = getSortValue(activeSort);
 
         try {
-            console.log("=== [6] api call ===");
+            console.log("=== [7] api call ===");
             const response = await axiosInstance.get('/api/store/list', {
                 params: {
                     "storeCategory": category,
@@ -121,7 +125,7 @@ const StoreListScreen = () => {
             const {status, msg, data} = response.data;
 
             if (status === 'SUCCESS' && data) {
-                console.log("=== [7] SUCCESS response ===");
+                console.log("=== [8] SUCCESS response ===");
                 const {stores, currentPage, totalPages} = data;
 
                 if (stores && stores.length > 0) {
@@ -166,6 +170,14 @@ const StoreListScreen = () => {
         resetStoreList();
     }, [resetStoreList]);
 
+    // 사용자 위치명 렌더링
+    useEffect(() => {
+        if (userPosition.pointX !== 0 && userPosition.pointY !== 0) {
+            console.log("=== [4.1] useEffect called ===");
+            getUserLocationName();
+        }
+    }, [userPosition]);
+
     // 초기 렌더링
     useEffect(() => {
         console.log("=== [1] useEffect called ===");
@@ -173,7 +185,7 @@ const StoreListScreen = () => {
     }, [activeFilter, activeSort, initializeStoreList]);
 
     useEffect(() => {
-        console.log("=== [4] fetchStoreList useEffect called ===");
+        console.log("=== [5] fetchStoreList useEffect called ===");
         if (!isLoading && hasMore && userPosition.pointX !== 0 && userPosition.pointY !== 0) {
             fetchStoreList();
         }
