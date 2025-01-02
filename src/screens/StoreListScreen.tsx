@@ -63,15 +63,11 @@ const StoreListScreen = () => {
     // 사용자 위치 정보 반환
     const getUserLocation = async () => {
         console.log("=== [4] getUserLocation called ===");
+        console.log("[4] start time: ", new Date().toLocaleTimeString());
         try {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                console.error('위치 권한이 필요합니다.');
-                return;
-            }
-
+            await requestLocationPermission();
             const location = await Location.getCurrentPositionAsync({
-                accuracy: Location.Accuracy.High,
+                accuracy: Location.Accuracy.Balanced,
             });
 
             setUserPosition({
@@ -79,9 +75,39 @@ const StoreListScreen = () => {
                 pointY: location.coords.latitude,
             });
         } catch (error) {
-            console.error(error);
+            console.error("위치 검색 실패: ", error);
+            setUserPosition({pointX: 0, pointY: 0});
         }
+        console.log("[4] end time: ", new Date().toLocaleTimeString());
     }
+
+    // 사용자 위치 권한 요청
+    const requestLocationPermission = async () => {
+        const {status} = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            console.error('위치 권한이 필요합니다.');
+            return;
+        }
+    };
+
+    // 사용자 위치 반환
+    const fetchLocation = async () => {
+        const location = await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+        });
+        setUserPosition({
+            pointX: location.coords.longitude,
+            pointY: location.coords.latitude,
+        });
+    };
+
+    // 사용자 위치 반환 (타임아웃 설정)
+    const fetchLocationWithTimeout = async (timeout = 5000) => {
+        return Promise.race([
+            Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), timeout)),
+        ]);
+    };
 
     // 사용자 위치명 반환
     const getUserLocationName = async () => {
@@ -104,6 +130,7 @@ const StoreListScreen = () => {
     // 가게 목록 데이터 반환
     const fetchStoreList = useCallback(async () => {
         console.log("=== [5] fetchStoreList called ===");
+        console.log("start time: ", new Date().toLocaleTimeString());
 
         setIsLoading(true);
         const category = getCategoryValue(activeFilter);
@@ -111,6 +138,7 @@ const StoreListScreen = () => {
 
         try {
             console.log("=== [7] api call ===");
+            console.log("[7] start time: ", new Date().toLocaleTimeString());
             const response = await axiosInstance.get('/api/store/list', {
                 params: {
                     "storeCategory": category,
@@ -124,8 +152,11 @@ const StoreListScreen = () => {
 
             const {status, msg, data} = response.data;
 
+            console.log("[7] end time: ", new Date().toLocaleTimeString());
+
             if (status === 'SUCCESS' && data) {
                 console.log("=== [8] SUCCESS response ===");
+                console.log("[8] start time: ", new Date().toLocaleTimeString());
                 const {stores, currentPage, totalPages} = data;
 
                 if (stores && stores.length > 0) {
@@ -145,6 +176,7 @@ const StoreListScreen = () => {
             console.error(error);
         } finally {
             setIsLoading(false);
+            console.log("[8] end time: ", new Date().toLocaleTimeString());
         }
     }, [activeFilter, activeSort, pageNumber, isLoading, hasMore, userPosition]);
 
@@ -158,15 +190,18 @@ const StoreListScreen = () => {
     // 가게 목록 데이터 초기화
     const resetStoreList = useCallback(async () => {
         console.log("=== [3] resetStoreList called ===");
+        console.log("[3]start time: ", new Date().toLocaleTimeString());
         if (userPosition.pointX === 0 && userPosition.pointY === 0) await getUserLocation();
         setStoreList([]);
         setPageNumber(0);
         setHasMore(true);
+        console.log("[3] end time: ", new Date().toLocaleTimeString());
     }, [userPosition]);
 
     // 가게 목록 초기화 함수 호출
     const initializeStoreList = useCallback(async () => {
         console.log("=== [2] initializeStoreList called ===");
+        console.log("start time: ", new Date().toLocaleTimeString());
         resetStoreList();
     }, [resetStoreList]);
 
@@ -174,21 +209,27 @@ const StoreListScreen = () => {
     useEffect(() => {
         if (userPosition.pointX !== 0 && userPosition.pointY !== 0) {
             console.log("=== [4.1] useEffect called ===");
+            console.log("[4.1] start time: ", new Date().toLocaleTimeString());
             getUserLocationName();
+            console.log("[4.1] end time: ", new Date().toLocaleTimeString());
         }
     }, [userPosition]);
 
     // 초기 렌더링
     useEffect(() => {
         console.log("=== [1] useEffect called ===");
+        console.log("[1] start time: ", new Date().toLocaleTimeString());
         initializeStoreList();
+        console.log("[1] end time: ", new Date().toLocaleTimeString());
     }, [activeFilter, activeSort, initializeStoreList]);
 
     useEffect(() => {
         console.log("=== [5] fetchStoreList useEffect called ===");
+        console.log("[5] start time: ", new Date().toLocaleTimeString());
         if (!isLoading && hasMore && userPosition.pointX !== 0 && userPosition.pointY !== 0) {
             fetchStoreList();
         }
+        console.log("[5] end time: ", new Date().toLocaleTimeString());
     }, [hasMore, fetchStoreList, userPosition]);
 
     // 매장 개별 렌더링
