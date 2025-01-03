@@ -13,7 +13,7 @@ const BottomTabNavigator: React.FC = () => {
         <Tab.Navigator
             initialRouteName="Home"
             screenOptions={({ route }) => ({
-                tabBarIcon: ({ color, size }) => {
+                tabBarIcon: ({ color}) => {
                     let iconName: keyof typeof Ionicons.glyphMap;
 
                     if (route.name === 'Home') {
@@ -22,17 +22,27 @@ const BottomTabNavigator: React.FC = () => {
                         iconName = 'search';
                     } else if (route.name === 'Map') {
                         iconName = 'map';
+                    } else if (route.name === 'Community') {
+                        iconName = 'chatbubbles-outline';
+                    } else if (route.name === 'MyPage') {
+                        iconName = 'person';
                     }
 
-                    return <Ionicons name={iconName} size={size} color={color} />;
+                    return <Ionicons name={iconName} size={17} color={color}/>;
                 },
-                tabBarActiveTintColor: 'black',
+                tabBarActiveTintColor: '#121D82',
                 tabBarInactiveTintColor: 'gray',
+                tabBarStyle: {
+                    paddingTop: 5,
+                    zIndex: 1000,
+                }
             })}
          id={undefined}>
-            <Tab.Screen name="Home" component={MainScreen} options={{ tabBarLabel: '홈' }} />
-            <Tab.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: '검색' }} />
             <Tab.Screen name="Map" component={MapScreen} options={{ tabBarLabel: '지도' }} />
+            <Tab.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: '검색' }} />
+            <Tab.Screen name="Home" component={MainScreen} options={{ tabBarLabel: '홈' }} />
+            <Tab.Screen name="Community" component={MainScreen} options={{ tabBarLabel: '커뮤니티' }} />
+            <Tab.Screen name="MyPage" component={MainScreen} options={{ tabBarLabel: '마이홈' }} />
         </Tab.Navigator>
 
 
