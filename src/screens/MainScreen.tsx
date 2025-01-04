@@ -5,13 +5,8 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import SearchBar from '../components/SearchBar';
 import SearchScreen from '../screens/SearchScreen';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-/**
- * 메인 화면
- * @since 2024.10.27
- * @latest 2024.10.27
- * @author 김진수
- */
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -28,6 +23,15 @@ const MainScreen: React.FC = () => {
 
     const navigateToAccommodation = () => {
         navigation.navigate('Accommodation');
+    };
+
+    const handleLogout = async () => {
+        try {
+            await AsyncStorage.removeItem("authToken"); // 저장된 토큰 삭제
+            navigation.navigate("NonLoginMain"); // 로그인 화면으로 이동
+        } catch (error) {
+            console.error("로그아웃 실패:", error);
+        }
     };
 
     return (
@@ -50,10 +54,10 @@ const MainScreen: React.FC = () => {
                                 <TouchableOpacity
                                     onPress={category === '지도' ? navigateToMap
                                         : category === '숙소' ? navigateToAccommodation
-                                        : undefined}
+                                            : undefined}
                                     style={{ backgroundColor: '#E0E0E0', borderRadius: 10, height: 80, justifyContent: 'center', alignItems: 'center' }}
                                 >
-                                <Text style={{ textAlign: 'center', color: '#4A4A4A' }}>{category}</Text>
+                                    <Text style={{ textAlign: 'center', color: '#4A4A4A' }}>{category}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
