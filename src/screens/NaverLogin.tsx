@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React, {useState} from "react";
 import { View, StyleSheet, Alert } from "react-native";
 import { WebView } from "react-native-webview";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import config from "../config/config";
+import config from "../config/config"; // 백엔드 URL이 포함된 설정 파일
 import { RootStackParamList } from "../navigation/AppNavigator";
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "NaverLogin">;
@@ -15,43 +15,28 @@ const NaverLogin: React.FC = () => {
     const route = useRoute();
     const { url } = route.params as { url: string };
 
-    // 앱 시작 시 자동 로그인 토큰 확인
-    useEffect(() => {
-        const checkToken = async () => {
-            const token = await AsyncStorage.getItem("authToken");
-            if (token) {
-                try {
-                    // 토큰 유효성 검증 요청
-                    const response = await axios.get(`${config.baseURL}/validate-token`, {
-                        headers: { Authorization: `Bearer ${token}` },
-                    });
+    const [isRequestSent, setIsRequestSent] = useState(false);
 
-                    if (response.status === 200) {
-                        // 유효한 경우 메인 화면으로 이동
-                        navigation.navigate("Main");
-                    }
-                } catch (error) {
-                    console.log("자동 로그인 실패:", error);
-                    // 유효하지 않은 토큰 삭제
-                    await AsyncStorage.removeItem("authToken");
-                }
-            }
-        };
-        checkToken();
-    }, []);
-
-    // 네이버 로그인 코드와 state를 백엔드로 전달
     const sendCodeToBackend = async (code: string, state: string) => {
-        try {
-            const response = await axios.post(`${config.baseURL}/naver/callback`, { code, state });
-            const { authToken } = response.data;
+        if (isRequestSent) return; // 이미 요청이 진행 중이면 중단
+        setIsRequestSent(true);
 
+        try {
+            console.log(code, state);
+            const response = await axios.post(`${config.baseURL}/naver/callback`, {
+                code,
+                state,
+            });
+
+            const { authToken, refreshToken } = response.data;
+
+            console.log("Response Data:", response.data);
             if (authToken) {
-                // 토큰 저장 및 메인 화면으로 이동
                 await AsyncStorage.setItem("authToken", authToken);
-                navigation.navigate("Main");
+                await AsyncStorage.setItem("refreshToken", refreshToken);
+                Alert.alert("로그인 성공", "토큰이 저장되었습니다.");
+                navigation.navigate('Main');
             } else {
-                console.error("authToken이 응답에 포함되지 않았습니다:", response.data);
                 Alert.alert("로그인 실패", "토큰 발급에 실패했습니다.");
             }
         } catch (error) {
@@ -60,14 +45,12 @@ const NaverLogin: React.FC = () => {
         }
     };
 
-    // WebView의 URL 변경 감지
-    const handleWebViewNavigationStateChange = (navState: any): void => {
+    const handleWebViewNavigationStateChange = (navState: any) => {
         const { url } = navState;
         if (url.includes("code=") && url.includes("state=")) {
             const code = url.split("code=")[1].split("&")[0];
             const state = url.split("state=")[1].split("&")[0];
-
-            sendCodeToBackend(code, state); // 백엔드로 코드와 state 전송
+            sendCodeToBackend(code, state);
         }
     };
 

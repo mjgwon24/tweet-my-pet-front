@@ -31,17 +31,9 @@ const NonLoginMainScreen: React.FC = () => {
     };
 
     // [추가] 네이버 로그인 핸들러
-    const handleNaverLogin = async () => {
-        try {
-            // 네이버 로그인 URL 생성
-            const naverLoginUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=random_state`;
-
-            // 네이버 로그인 화면으로 이동
-            navigation.navigate("NaverLogin", { url: naverLoginUrl }); // [추가] 네이버 로그인 화면 이동
-        } catch (error) {
-            console.error("네이버 로그인 오류:", error);
-            Alert.alert("로그인 실패", "네이버 로그인 중 문제가 발생했습니다.");
-        }
+    const handleNaverLogin = () => {
+        const naverLoginUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=random_state`;
+        navigation.navigate("NaverLogin", { url: naverLoginUrl });
     };
 
     // [기존] 로그아웃 핸들러
