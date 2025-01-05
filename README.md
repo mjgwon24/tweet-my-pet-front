@@ -23,6 +23,7 @@
 |--------------|--------------------------|-----------------------------------|---------------|
 | **권민지** | [mjgwon24](https://github.com/mjgwon24) | PM & frontend & backend           | React Native, TypeScript, JS, HTML, CSS |
 | **김진수** | [Jin-su-11](https://github.com/Jin-su-11) | 데이터베이스 설계 & frontend & backend        | React Native, TypeScript, JS, HTML, CSS |
+| **김이현** | [lh7721004](https://github.com/lh7721004) | frontend & backend        | React Native, TypeScript, JS, HTML, CSS |
 | **임석진** | [seokjin925](https://github.com/seokjin925) | frontend & backend                 | React Native, TypeScript, JS, HTML, CSS |
 | **문채윤** | - | 프로젝트 기획 및 기능 설계             | Figma |
 
