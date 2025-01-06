@@ -21,7 +21,7 @@ type NavigationProp = StackNavigationProp<StartStackParamList, 'Start'>;
  * @latest 2024.12.21
  * @author 김이현
  */
-const LoadingScreen: React.FC = () => {
+const StartScreen: React.FC = () => {
     const navigation = useNavigation<NavigationProp>();
     const handleStart = () => {navigation.navigate('Main')}
 
@@ -59,4 +59,4 @@ const LoadingScreen: React.FC = () => {
     );
 };
 
-export default LoadingScreen;
+export default StartScreen;
