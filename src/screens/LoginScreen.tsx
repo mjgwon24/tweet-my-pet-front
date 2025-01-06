@@ -1,131 +1,127 @@
-import React, {useContext, useState} from 'react';
-import {View, Text, TextInput, TouchableOpacity, Alert} from "react-native";
-import axios, {AxiosInstance} from "axios";
-import config from "../config/config";
-import {AuthContext} from "../navigation/AppNavigator";
+import React,{useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Alert
+} from 'react-native';
 import {useNavigation} from "@react-navigation/native";
 import {StackNavigationProp} from "@react-navigation/stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-//RootStackParamList 타입 정의
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios, {AxiosInstance} from 'axios';
+import config from '../config/config';
+// RootStackParamList 타입 정의
 type RootStackParamList = {
     NonLogMain: undefined; // 비로그인 메인 페이지
     Main: undefined; // 메인 페이지
     Login: undefined; // 로그인 페이지
     SignUp: undefined; // 회원가입 페이지
+    FindId: undefined; // 아이디 찾기 페이지
+    FindPassword: undefined; // 비밀번호 찾기 페이지
 };
 
 type NavigationProps = StackNavigationProp<RootStackParamList, 'Login'>;
 
-/**
- * 로그인 화면
- * @since 2024.10.26
- * @latest 2024.11.02
- * @author 권민지
- */
-const LoginScreen: React.FC = () => {
-    const {setIsLogin} = useContext(AuthContext);
-    const navigation = useNavigation<NavigationProps>();
 
-    // 상태 변수 생성
-    const [id, setId] = useState<String>('');
-    const [password, setPassword] = useState<String>('');
-    const [isTouched, setIsTouched] = useState<boolean>(false);
-
-    // ref 객체 생성
-    const idRef = React.createRef<TextInput>();
-    const passwordRef = React.createRef<TextInput>();
-
-    /**
-     * Axios 인스턴스 생성
-     */
-    const axiosInstance: AxiosInstance = axios.create({
-        baseURL: config.baseURL,
-        responseType: 'json',
-        withCredentials: true,
-        headers: { 'Content-Type': 'application/json' }
-    });
-
-    /**
-     * 로그인 버튼 클릭 이벤트
-     */
-    const handleLogin = async (): Promise<void> => {
-        setIsTouched(true);
-
-        // 입력 필드 유효성 검증
-        if (!id.trim() || !password.trim()) {
-            Alert.alert('빈칸 존재', '아이디 또는 비밀번호를 입력해주세요.');
-
-            // 빈 필드에 포커스
-            if (!id.trim()) {
-                idRef.current?.focus();
-                return;
-            } else {
-                passwordRef.current?.focus();
-                return;
-            }
-        }
-
-        // 로그인 요청
-        try {
-            const response = await axiosInstance.post('/login',
-                {
-                    "loginId": id,
-                    "password": password
-                });
-
-            if (response.status === 200) {
-                const token = response.data;
-                await AsyncStorage.setItem('authToken', token);
-                console.log(`authToken: ${token}`);
-                setIsLogin(true);
-                navigation.navigate('Main');
-            }
-        } catch (error) {
-            Alert.alert('로그인 실패', '아이디 또는 비밀번호를 다시한번 확인해주세요.');
-        }
-    };
-
-    // 입력 필드 테두리 색상 상태
-    const getBorderColorClass = (value: string) => {
-        if (isTouched) {
-            return value ? 'border-gray-300' : 'border-red-600';
-        }
-
-        // 초기 상태는 회색 테두리
-        return 'border-gray-300';
+export default function LoginScreen() {
+  const [loginId,setLoginId] = useState("");
+  const [loginPassword,setLoginPassword] = useState("");
+  const axiosInstance: AxiosInstance = axios.create({
+    baseURL: config.baseURL,
+    responseType: 'json',
+    withCredentials: true,
+    headers: { 'Content-Type': 'application/json' }
+});
+  const tryLogin = async() => {
+  try {
+    const response = await axiosInstance.post('/login',
+        { "loginId": loginId,"password":loginPassword});
+    if (response.status === 200) {
+        await AsyncStorage.setItem('accessToken', response.data);
+        Alert.alert('로그인 성공', '로그인에 성공했습니다');
     }
-
-    return (
-        <View className="flex-1 justify-center bg-white px-4">
-            <View className="mb-40">
-                <Text className="text-3xl font-bold mb-6 text-center text-blue-600">로그인</Text>
-                <TextInput
-                    ref={idRef}
-                    className={`border ${getBorderColorClass(id as string)} rounded-lg p-3 mb-4`}
-                    placeholder="아이디"
-                    value={id as string}
-                    onChangeText={setId}
-                    autoCapitalize="none"
-                />
-                <TextInput
-                    ref={passwordRef}
-                    className={`border ${getBorderColorClass(password as string)} rounded-lg p-3 mb-4`}
-                    placeholder="비밀번호"
-                    value={password as string}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
-
-                <TouchableOpacity
-                    onPress={handleLogin}
-                    className="bg-blue-700 py-3 px-6 rounded-lg shadow-lg hover:bg-blue-800"
-                >
-                    <Text className="text-white text-lg font-semibold text-center">로그인</Text>
-                </TouchableOpacity>
-            </View>
+} catch (error) {
+  Alert.alert('로그인 실패', '로그인에 실패했습니다');
+}
+}
+  const navigation = useNavigation<NavigationProps>();
+  return (
+    <View className="flex-1 justify-center items-center bg-white px-[35px]">
+        <View className='flex flex-row w-full items-start'>
+            <Text className="text-[32px] font-bold mb-2 pr-1">
+                로그인 
+            </Text>
+            <Image
+                    source={require('../images/common/footprint.png')}
+                    />
         </View>
-    );
-};
+        <View className='flex flex-row w-full items-start mb-11'>
+            <View className='flex flex-col gap-0 items-start'>
+                <Text className="text-[#717171] text-left">
+                    트윗 마이 펫의 회원이신가요?
+                </Text>
+                <Text className="text-[#717171] text-left">
+                    로그인을 해주세요!
+                </Text>
+            </View>
+                
+        </View>
 
-export default LoginScreen;
+            
+        
+      <TextInput
+        className="border border-gray-300 rounded-xl w-[289px] py-3 px-4 mb-2"
+        placeholder="아이디 입력"
+        placeholderTextColor="#d1d5db"
+        autoCapitalize="none"
+        value={loginId}
+        onChangeText={Text=>setLoginId(Text)}
+      />
+      <TextInput
+        className="border border-gray-300 rounded-xl w-[289px] py-3 px-4 mb-4"
+        placeholder="비밀번호 입력"
+        placeholderTextColor="#d1d5db"
+        autoCapitalize="none"
+        secureTextEntry
+        value={loginPassword}
+        onChangeText={Text=>setLoginPassword(Text)}
+      />
+      
+      <TouchableOpacity className="bg-[#3D47AA] w-[289px] py-3 rounded-xl mb-4" onPress={tryLogin}>
+        <Text className="text-center text-white font-bold">로그인</Text>
+      </TouchableOpacity>
+
+      <View className="flex-row justify-center w-[289px] mb-40 gap-4">
+        <TouchableOpacity onPress={()=>{navigation.navigate('FindId');}}><Text className="text-sm text-gray-500">아이디 찾기</Text></TouchableOpacity>
+        <TouchableOpacity onPress={()=>{navigation.navigate('FindPassword');}}><Text className="text-sm text-gray-500">비밀번호 찾기</Text></TouchableOpacity>
+        <TouchableOpacity onPress={()=>{navigation.navigate('SignUp');}}><Text className="text-sm text-gray-500">회원가입</Text></TouchableOpacity>
+      </View>
+
+      <View className="flex-row items-center w-[289px] mb-4">
+        <View className="flex-1 h-px bg-gray-300" />
+        <Text className="text-gray-500 mx-2">SNS 간편 로그인</Text>
+        <View className="flex-1 h-px bg-gray-300" />
+      </View>
+
+      <View className="flex-row justify-center w-[289px] gap-[29px]">
+            <View className='w-9 h-9 rounded-[50%] overflow-hidden border border-[#FFF]'>
+                <Image
+                    source={require('../images/authImages/NaverOAuthButton.png')}
+                    />
+            </View>
+            <View className='w-9 h-9 rounded-[100px] overflow-hidden'>
+                <Image
+                    source={require('../images/authImages/KakaoOAuthButton.png')}
+                />
+            </View>
+            <View className='w-9 h-9 rounded-[50%] overflow-hidden'>
+                <Image
+                    source={require('../images/authImages/GoogleOAuthButton.png')}
+                    />
+            </View>
+      </View>
+    </View>
+  );
+}
