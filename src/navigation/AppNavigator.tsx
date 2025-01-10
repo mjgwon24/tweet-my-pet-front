@@ -11,6 +11,7 @@ import MapScreen from '../screens/MapScreen';
 import StoreListScreen from '../screens/StoreListScreen';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DevLoadingView from "expo/build/environment/DevLoadingView";
+import MapSeacrhScreen from "../screens/MapSeacrhScreen";
 import NaverLogin from "../screens/NaverLogin";
 import FindIdScreen from '../screens/FindIdScreen';
 import FindIdSuccessScreen from '../screens/FindIdSuccessScreen';
@@ -30,6 +31,7 @@ export type RootStackParamList = {
     FindIdSuccess:{ userId: string };
     FindPassword:undefined;
     ChangePassword:undefined;
+    MapSearch: undefined;
 };
 
 // login 여부 관리 Context
@@ -82,6 +84,7 @@ const AppNavigator: React.FC = () => {
                     <Stack.Screen name="FindIdSuccess" component={FindIdSuccessScreen} options={{ title: '아이디 찾기 성공' }} />
                     <Stack.Screen name="FindPassword" component={FindPasswordScreen} options={{ title: '비밀번호 찾기' }} />
                     <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ title: '비밀번호 변경' }} />
+                    <Stack.Screen name="MapSearch" component={MapSeacrhScreen} options={{ title: '지도 검색' }} />
                 </Stack.Navigator>
             </NavigationContainer>
         </AuthContext.Provider>

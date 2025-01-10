@@ -26,32 +26,37 @@ const MapSearchScreen = () => {
     return (
         <View className="flex-1 bg-white">
             {/* 검색창 */}
-            <View className="flex-row items-center mt-10 px-4">
+            <View className="flex-row items-center mt-5 px-4">
                 <TouchableOpacity className="mr-2">
                     <Ionicons name="chevron-back" size={20} color="#888" />
                 </TouchableOpacity>
-                <TextInput
-                    className="flex-1 h-10 bg-gray-100 rounded px-2 text-black"
-                    placeholder="경주시 석장동"
-                    placeholderTextColor="#aaa"
-                    value={searchText}
-                    onChangeText={setSearchText}
-                />
-                <TouchableOpacity className="mx-2">
-                    <Ionicons name="mic-outline" size={20} color="#888" />
-                </TouchableOpacity>
-                <TouchableOpacity className="bg-indigo-600 rounded px-2 py-1 items-center">
+
+                {/* 검색창 안에 아이콘과 텍스트 */}
+                <View className="flex-1 flex-row items-center h-10 bg-gray-100 rounded px-2">
+                    <TextInput
+                        className="flex-1 text-black"
+                        placeholder="경주시 석장동"
+                        placeholderTextColor="#aaa"
+                        value={searchText}
+                        onChangeText={setSearchText}
+                    />
+                    <Ionicons name="mic-outline" size={20} color="gray" style={{ marginLeft: 5 }} />
+                </View>
+
+                <TouchableOpacity className="bg-[#3D47AA] rounded px-2 py-1 items-center mx-2">
                     <MaterialIcons name="turn-right" size={20} color="#fff" />
-                    <Text className="text-white text-xs mt-1">길찾기</Text>
+                    <Text className="text-white text-xs font-bold mt-1">길찾기</Text>
                 </TouchableOpacity>
             </View>
+
+
 
             {/* 필터 버튼 */}
             <View className="flex-row justify-around items-center py-2 border-t border-b border-gray-200 mt-2">
                 {filterOptions.map((filter) => (
                     <TouchableOpacity key={filter.label} className="flex-row items-center">
-                        <MaterialIcons name={filter.icon} size={16} color="#3D47AA" />
-                        <Text className="ml-1 text-indigo-600 text-sm">{filter.label}</Text>
+                        <MaterialIcons name={filter.icon} size={20} color="#3D47AA" />
+                        <Text className="ml-1 text-[#333] text-sm">{filter.label}</Text>
                     </TouchableOpacity>
                 ))}
             </View>

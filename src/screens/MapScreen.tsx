@@ -20,8 +20,10 @@ import MediumDogIcon from '../images/common/medium-dog-icon.png';
 import SmallDogIcon from '../images/common/small-dog-icon.png';
 import KidSeatIcon from '../images/common/kid-seat-icon.png';
 type NavigationProp = StackNavigationProp<RootStackParamList, 'Map'>;
+import { KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
+import handleSortByDistance from '../screens/StoreListScreen';
 
 
 const MapScreen = () => {
@@ -100,19 +102,22 @@ const MapScreen = () => {
         { key: 'isKidSeat', icon: KidSeatIcon, label: '유아용의자' },
     ];
 
-
-
-
     const getFilteredLocations = () => {
         if (selectedFilter === null) return locations; // 필터 선택되지 않음 → 모든 마커 표시
         const selectedCategory = filterOptions[selectedFilter].category;
         return locations.filter(location => location.Category === selectedCategory);
     };
-
     const filteredLocations = getFilteredLocations();
-
+    useEffect(() => {
+        if (webViewReady && webViewRef.current) {
+            const script = `
+                updateMarkers(${JSON.stringify(filteredLocations)});
+            `;
+            webViewRef.current.injectJavaScript(script);
+        }
+    }, [filteredLocations, webViewReady]);
     const gap = 8;
-    const buttonWidth = (screenWidth * 0.74 - gap * (filterOptions.length - 1)) / filterOptions.length;
+    const buttonWidth = (screenWidth * 0.9 - gap * (filterOptions.length - 1)) / filterOptions.length;
 
     const handleWebViewLoad = () => {
         setWebViewReady(true);
@@ -121,6 +126,11 @@ const MapScreen = () => {
     const getUserLocation = async () => {
         try {
             const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'Location permission is required to use this feature.');
+                return;
+            }
+
             const location = await Location.getCurrentPositionAsync({
                 accuracy: Location.Accuracy.Low,
             });
@@ -129,17 +139,22 @@ const MapScreen = () => {
                 lat: location.coords.latitude,
                 lng: location.coords.longitude,
             });
-            console.log(location.coords.latitude)
-        } catch {
+
+
+
+            // 위치 가져온 후 fetchLocations 호출
+            fetchLocations(location.coords.latitude, location.coords.longitude);
+        } catch (error) {
             Alert.alert('Error', 'Failed to retrieve user location.');
+            console.error("Get User Location Error:", error);
         } finally {
             setLoading(false);
         }
     };
 
+
     const moveToMyLocation = () => {
         if (!webViewReady || !mapCenter || !webViewRef.current) return;
-        console.log("WebView not ready or mapCenter is null:", webViewReady, mapCenter);
 
         const script = `
             moveToMyLocation(${mapCenter.lat}, ${mapCenter.lng});
@@ -148,17 +163,17 @@ const MapScreen = () => {
         webViewRef.current.injectJavaScript(script);
     };
 
-    const fetchLocations = async () => {
+    const fetchLocations = async (latitude, longitude) => {
         try {
             const response = await fetch(`${config.baseURL}api/store/coordinates`);
             const responseData = await response.json();
 
             if (responseData && Array.isArray(responseData.data)) {
                 const transformedData = responseData.data.map((store: any) => {
-                    const distance = mapCenter
+                    const distance = latitude && longitude
                         ? haversineDistance(
-                            mapCenter.lat,
-                            mapCenter.lng,
+                            latitude,
+                            longitude,
                             store.latitude,
                             store.longitude
                         )
@@ -190,6 +205,7 @@ const MapScreen = () => {
                         },
                     };
                 });
+
                 setLocations(transformedData);
             }
         } catch (error) {
@@ -198,9 +214,9 @@ const MapScreen = () => {
         }
     };
 
+
     useEffect(() => {
         getUserLocation();
-        fetchLocations();
     }, []);
 
     const kakaoMapHTML = mapCenter
@@ -220,50 +236,68 @@ const MapScreen = () => {
     <div id="map"></div>
     <script>
         var map;
-        
+        var markers = []; // 기존 마커를 관리하는 배열
 
+        // 맵 초기화
+        var map = new kakao.maps.Map(document.getElementById('map'), { 
+            center: new kakao.maps.LatLng(${mapCenter.lat}, ${mapCenter.lng}), 
+            level: 3 
+        });
+
+        // React에서 전달받은 위치로 맵 중심 이동
         window.moveToMyLocation = function(lat, lng) {
             var moveLatLng = new kakao.maps.LatLng(lat, lng);
             map.setCenter(moveLatLng);
         };
 
-        var mapCenterLat = ${mapCenter.lat};
-        var mapCenterLng = ${mapCenter.lng};
-      
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapCenter', lat: mapCenterLat, lng: mapCenterLng }));
+        // 마커를 업데이트하는 함수
+        function updateMarkers(newLocations) {
+            // 기존 마커 삭제
+            markers.forEach(marker => marker.setMap(null)); // 마커 제거
+            markers = []; // 배열 초기화
 
-        
-        var map = new kakao.maps.Map(document.getElementById('map'), { 
-            center: new kakao.maps.LatLng(${mapCenter.lat}, ${mapCenter.lng}), 
-            level: 3 
-        });
-         
+            // 새 마커 추가
+            newLocations.forEach(function(location) {
+                if (location.coords) {
+                    var marker = new kakao.maps.Marker({
+                        position: new kakao.maps.LatLng(location.coords.lat, location.coords.lng),
+                        map: map
+                    });
 
-        var locations = ${JSON.stringify(filteredLocations)};
-        locations.forEach(function(location) {
-            if (location.coords) {
-                var marker = new kakao.maps.Marker({
-                    position: new kakao.maps.LatLng(location.coords.lat, location.coords.lng),
-                    map: map
-                });
+                    // 마커 클릭 이벤트 추가
+                    kakao.maps.event.addListener(marker, 'click', function() {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                            name: location.name,
+                            coords: location.coords,
+                            rating: location.rating,
+                            reviewCount: location.reviewCount,
+                            location: location.location,
+                            features: location.features,
+                            price: location.price,
+                            thumbPath: location.thumbPath,
+                            distance: location.distance,
+                        }));
+                    });
 
-               kakao.maps.event.addListener(marker, 'click', function() {
-    window.ReactNativeWebView.postMessage(JSON.stringify({
-        name: location.name,
-        rating: location.rating,
-        reviewCount: location.reviewCount,
-        location: location.location,
-        features: location.features,
-        price: location.price,
-        thumbPath: location.thumbPath,
-    }));
-    
-});
-            }
-        });
+                    // 마커 배열에 추가
+                    markers.push(marker);
+                }
+            });
+        }
+
+        // React에서 호출할 수 있도록 updateMarkers 함수를 전역으로 등록
+        window.updateMarkers = updateMarkers;
+
+        // React로 초기 맵 중심 정보를 전달
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'mapCenter', 
+            lat: ${mapCenter.lat}, 
+            lng: ${mapCenter.lng}
+        }));
     </script>
 </body>
 </html>
+
 ` : '';
     const handleFilterPress = (index: number) => {
         setSelectedFilter(selectedFilter === index ? null : index);
@@ -271,7 +305,7 @@ const MapScreen = () => {
     return (
         <SafeAreaView className="flex-1 bg-white">
             {/* WebView 영역 */}
-            <View style={{ flex: 1}}>
+            <View className="flex-1">
                 <WebView
                     originWhitelist={['*']}
                     source={{ html: kakaoMapHTML }}
@@ -290,18 +324,16 @@ const MapScreen = () => {
                         }
                     }}
                 />
-
             </View>
 
-
-
+            {/* TouchableWithoutFeedback으로 전체 화면 감싸기 */}
             {selectedLocation && (
                 <View
                     className="absolute bottom-0 left-0 w-full bg-white rounded-t-lg shadow-lg z-50"
                     style={{
                         paddingHorizontal: 12,
                         paddingVertical: 8,
-                        height: '40%',
+                        height: '38%',
                     }}
                 >
 
@@ -318,62 +350,68 @@ const MapScreen = () => {
                         <MaterialIcons name="close" size={24} color="#BFBFBF" />
                     </TouchableOpacity>
 
-                    <View
-                        className="flex-row items-start mt-1 rounded-xl"
-                        style={{ alignItems: 'flex-start' }}
+                    {/* 길찾기 버튼 */}
+                    <TouchableOpacity
+                        onPress={() => {
+                            const url = `https://map.kakao.com/link/to/${selectedLocation?.name},${selectedLocation?.coords.lat},${selectedLocation?.coords.lng}`;
+                            Linking.openURL(url);
+                        }}
+                        className="z-50 absolute right-3 top-12 bg-[#3D47AA] rounded-full px-4 py-2 flex-row items-center"
+                        activeOpacity={0.8}
                     >
-                        {/* 이미지 처리 */}
+                        <MaterialIcons name="directions" size={18} color="#FFFFFF" />
+                        <Text className="text-white text-xs font-bold ml-2">길찾기</Text>
+                    </TouchableOpacity>
+
+                    <View
+                        className="flex-row items-start pl-2 pt-8 rounded-xl"
+                    >
                         <Image
                             source={{ uri: selectedLocation?.thumbPath || 'https://via.placeholder.com/150' }}
-                            style={{
-                                width: 100,
-                                height: 100,
-                                borderRadius: 8,
-                                marginRight: 10,
-                            }}
+                            className="w-28 h-28 rounded-lg mr-4"
                         />
 
-                        {/* 텍스트 데이터 처리 */}
-                        <View style={{ flex: 1 }}>
-                            <Text className="font-bold text-xl">{selectedLocation?.name || "No Name Available"}</Text>
-                            <Text className="text-gray-400 text-sm">
-                                ⭐ {selectedLocation?.rating || 0} ({selectedLocation?.reviewCount || 0} 리뷰)
-                            </Text>
-                            <Text className="text-neutral-400 text-sm">{selectedLocation?.location || "No Location Available"}</Text>
-                            {selectedLocation?.distance !== undefined && (
-                                <Text className="text-gray-400 text-xs">
-                                    거리: {selectedLocation.distance} km
+                        {/* 텍스트 데이터 + 아이콘 */}
+                        <View className="flex-1">
+                            {/* 텍스트 데이터 */}
+                            <View className="mb-2">
+                                <Text className="font-bold text-xl">{selectedLocation?.name || "No Name Available"}</Text>
+                                <Text className="text-gray-400 text-sm">
+                                    ⭐ {selectedLocation?.rating || 0} ({selectedLocation?.reviewCount || 0})
                                 </Text>
-                            )}
+                                <Text className="text-neutral-400 text-sm">{selectedLocation?.location || "No Location Available"}</Text>
+                                {selectedLocation?.distance !== undefined && (
+                                    <Text className="text-gray-400 z-50 text-xs">
+                                        거리: {selectedLocation.distance} km
+                                    </Text>
+                                )}
+                            </View>
+
+                            {/* Features Section */}
+                            <View className="flex-row flex-wrap">
+                                {featureList
+                                    .filter((feature) => selectedLocation.features?.[feature.key])
+                                    .slice(0, 3)
+                                    .map((feature) => (
+                                        <View key={feature.key} className="flex items-center w-1/4 p-1">
+                                            <Image
+                                                source={feature.icon}
+                                                resizeMode="contain"
+                                                className="w-5 h-5 "
+                                            />
+                                            <Text className="text-xs text-gray-600">{feature.label}</Text>
+                                        </View>
+                                    ))}
+                            </View>
                         </View>
                     </View>
-
-                    {/* Features Section */}
-                    <View className="flex-row flex-wrap">
-                        {featureList.map((feature) => {
-                            if (selectedLocation.features?.[feature.key]) {
-                                return (
-                                    <View key={feature.key} className="flex items-center w-1/4 p-1">
-                                        <Image
-                                            source={feature.icon}
-                                            style={{ width: 20, height: 20 }}
-                                            resizeMode="contain"
-                                        />
-                                        <Text className="text-xs text-gray-600">{feature.label}</Text>
-                                    </View>
-                                );
-                            }
-                            return null;
-                        })}
-                    </View>
-
                 </View>
             )}
 
             <View className="absolute top-8 left-5 right-5 flex-row items-center">
                 <TouchableOpacity
                     className="flex-row bg-white rounded-md px-3.5 py-3.5 shadow-xl"
-                    style={{ width: screenWidth * 0.74, height: screenWidth * 0.13 }}
+                    style={{ width: screenWidth * 0.9, height: screenHeight * 0.06 }}
                     onPress={() => navigation.navigate('MapSearchScreen')}
                     activeOpacity={0.8}
                 >
@@ -383,15 +421,7 @@ const MapScreen = () => {
                     </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    className="bg-[#3D47AA] rounded-lg items-center justify-center ml-2"
-                    style={{ width: screenWidth * 0.13, height: screenWidth * 0.13 }}
-                    onPress={() => console.log('길찾기')}
-                    activeOpacity={0.8}
-                >
-                    <MaterialIcons name="turn-right" size={20} color="white" />
-                    <Text className="text-white text-xs font-bold mt-1">길찾기</Text>
-                </TouchableOpacity>
+
             </View>
 
             <View
@@ -434,12 +464,11 @@ const MapScreen = () => {
             {/* 버튼 영역 */}
             <View className="absolute bottom-24 left-0 w-full flex-row items-start px-5 z-50">
                 {/* 내 위치 버튼 */}
-                {!selectedLocation && ( // selectedLocation이 있을 때 버튼 숨기기
+                {!selectedLocation && (
                     <TouchableOpacity
                         className="bg-[#3D47AA] rounded-lg items-center justify-center"
                         style={{ width: screenWidth * 0.13, height: screenWidth * 0.13 }}
                         onPress={() => {
-                            console.log("Move to my location button pressed");
                             moveToMyLocation();
                         }}
                         activeOpacity={0.5}
@@ -449,7 +478,6 @@ const MapScreen = () => {
                     </TouchableOpacity>
                 )}
             </View>
-
 
             {/* 전체보기 버튼 */}
             <View className="absolute bottom-24 left-0 w-full items-center z-30">
