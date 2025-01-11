@@ -58,13 +58,14 @@ export default function LoginScreen() {
             secureTextEntry
         />
         <TextInput
-            className="border border-gray-300 rounded-xl w-[289px] py-3 px-4 mb-[253px]"
+            className="border border-gray-300 rounded-xl w-[289px] py-3 px-4"
             placeholder="비밀번호 다시 입력"
             placeholderTextColor="#d1d5db"
             value={passwordAgain}
             onChangeText={newText=>setPasswordAgain(newText)}
             secureTextEntry
         />
+        <Text className="mt-[10px] mb-[243px] text-[#F00] font-semibold">{password==passwordAgain?"":"비밀번호가 일치하지 않습니다."}</Text>
       
         <TouchableOpacity className={`w-[284px] py-3 rounded-xl mb-4 ${password==passwordAgain&&password!=""?"bg-[#3D47AA]":"bg-[#BABABA]"}`}
         onPress={()=>{
@@ -73,9 +74,25 @@ export default function LoginScreen() {
                 const response = await axiosInstance.post('/changePassword',
                 { "token": token,"phoneNumber":userPhoneNumber,"password":password});
                 console.log(response);
-                navigation.navigate('Login');
+                if(response.status==200)
+                    navigation.navigate('Login');
             }
-            send_data();
+            try{
+                send_data();
+            }
+            catch(error){
+                if(error.response.status==404){
+                    Alert.alert("비밀번호 변경 실패", "일치하는 유저 정보가 없습니다.");//토큰 불일치
+                }
+                else if(error.response.status==403){
+                    Alert.alert("비밀번호 변경 실패", "인증정보가 만료되었습니다.");//토큰 만료
+                }
+                else{
+                    Alert.alert("비밀번호 변경 실패", "비밀번호 변경을 실패하였습니다.");//기타 이유
+                }
+                
+            }
+            
             }}>
             <Text className="text-center text-white font-bold text-[14px]">비밀번호 변경</Text>
         </TouchableOpacity>
