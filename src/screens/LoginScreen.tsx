@@ -28,6 +28,7 @@ type NavigationProps = StackNavigationProp<RootStackParamList, 'Login'>;
 export default function LoginScreen() {
   const [loginId,setLoginId] = useState("");
   const [loginPassword,setLoginPassword] = useState("");
+  const navigation = useNavigation<NavigationProps>();
   const axiosInstance: AxiosInstance = axios.create({
     baseURL: config.baseURL,
     responseType: 'json',
@@ -41,12 +42,13 @@ export default function LoginScreen() {
     if (response.status === 200) {
         await AsyncStorage.setItem('accessToken', response.data);
         Alert.alert('로그인 성공', '로그인에 성공했습니다');
+        navigation.navigate('Main');
     }
 } catch (error) {
   Alert.alert('로그인 실패', '로그인에 실패했습니다');
 }
 }
-  const navigation = useNavigation<NavigationProps>();
+  
   return (
     <View className="flex-1 justify-center items-center bg-white px-[35px]">
         <View className='flex flex-row w-full items-start'>
