@@ -412,7 +412,7 @@ const MapScreen = () => {
                 <TouchableOpacity
                     className="flex-row bg-white rounded-md px-3.5 py-3.5 shadow-xl"
                     style={{ width: screenWidth * 0.9, height: screenHeight * 0.06 }}
-                    onPress={() => navigation.navigate('MapSearchScreen')}
+                    onPress={() => navigation.navigate('MapSearch')}
                     activeOpacity={0.8}
                 >
                     <Ionicons name="search" size={20} color="gray" style={{ marginTop: 2 }} />
