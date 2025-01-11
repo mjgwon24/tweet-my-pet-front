@@ -41,30 +41,57 @@ export default function LoginScreen() {
         withCredentials: true,
         headers: { 'Content-Type': 'application/json' }
     });
-
     useEffect(() => {
-        let intervalId: NodeJS.Timeout;
-        
-        if (onAuth && !authSuccess && authTime > 0) {
-            const send_data = async()=>{
-                const response = await axiosInstance.post('/send-find-auth-code',
-                { "phoneNumber": phoneNumber});
-            }
-            send_data();
-            intervalId = setInterval(() => {
-                setAuthTime((prevTime) => {
-                    if (prevTime <= 1) {
-                        clearInterval(intervalId);
-                        return 0;
-                    }
-                    return prevTime as number - 1;
-                });
-            }, 1000);
-        }
-        
-        // 컴포넌트 언마운트 또는 인증 성공 시 인터벌 정리
-        return () => clearInterval(intervalId);
-    }, [onAuth, authSuccess]);
+      const send_data = async () => {
+          try {
+              const response = await axiosInstance.post('/send-find-loginId-auth-code', {
+                  phoneNumber,
+                  userName,
+              });
+  
+              if (response.status === 200) {
+                  console.log('인증번호 요청 성공');
+              } else {
+                  setOnAuth(false);
+              }
+          } catch (error) {
+              console.log('Error sending auth code:', error);
+              setOnAuth(false);
+              if(error.response.status==404){
+                  Alert.alert("인증 요청 실패", "일치하는 유저 정보가 없습니다.");//유저 정보 X
+              }
+              else if(error.response.status==400){
+                  Alert.alert("인증 요청 실패", "인증 요청에 실패했습니다.");//기타 이유
+              }
+          }
+      };
+  
+      if (onAuth && !authSuccess && authTime > 0) {
+          send_data(); // 인증번호 요청은 한 번만 실행
+      }
+  }, [onAuth, authSuccess, phoneNumber, userName]);
+  
+  useEffect(() => {
+      let intervalId: NodeJS.Timeout;
+  
+      if (onAuth && !authSuccess && authTime > 0) {
+          intervalId = setInterval(() => {
+              setAuthTime((prevTime) => {
+                  if (prevTime <= 1) {
+                      clearInterval(intervalId);
+                      return 0;
+                  }
+                  return prevTime - 1;
+              });
+          }, 1000);
+      }
+  
+      // 컴포넌트 언마운트 또는 인증 성공 시 인터벌 정리
+      return () => clearInterval(intervalId);
+  }, [onAuth, authSuccess, authTime]);
+  
+  
+    
     const navigation = useNavigation<NavigationProps>();
   return (
     <View className="flex-1 justify-center items-center bg-white px-[35px]">
@@ -105,10 +132,11 @@ export default function LoginScreen() {
                 value={phoneNumber}
                 keyboardType={'phone-pad'}
                 onChangeText={newText => setPhoneNumber(newText)}
+                editable={!onAuth}
             />
-            <TouchableOpacity className={`${userName&&phoneNumber?"bg-[#3D47AA]":"bg-[#BABABA]"} w-[71px] h-[44px] py-3 rounded-xl mb-4`}
+            <TouchableOpacity className={`${(userName&&phoneNumber)&&!(authSuccess)?"bg-[#3D47AA]":"bg-[#BABABA]"} w-[71px] h-[44px] py-3 rounded-xl mb-4`}
             onPress={()=>{setOnAuth(true)}}
-            disabled={!(userName&&phoneNumber)}>
+            disabled={!(userName&&phoneNumber)||onAuth||authSuccess}>
                 <Text className="text-center text-white font-bold">인증</Text>
             </TouchableOpacity>
         </View>
@@ -121,8 +149,9 @@ export default function LoginScreen() {
                 value={authNumber}
                 keyboardType={'phone-pad'}
                 onChangeText={newText => setAuthNumber(newText)}
+                editable={!authSuccess}
             />
-            <TouchableOpacity className={`${authNumber.length>=6?"bg-[#3D47AA]":"bg-[#BCBCBC]"} w-[71px] h-[44px] py-3 rounded-xl mb-4`}
+            <TouchableOpacity className={`${authNumber.length>=6&&!(authSuccess)?"bg-[#3D47AA]":"bg-[#BCBCBC]"} w-[71px] h-[44px] py-3 rounded-xl mb-4`}
             onPress={async () => {
                 try {
                   const response = await axiosInstance.post('/verify-findId-auth-code', {
@@ -146,7 +175,7 @@ export default function LoginScreen() {
                 }
               }}
               
-            disabled={!(authNumber.length>=6)}>
+            disabled={!(authNumber.length>=6)||authSuccess}>
                 <Text className="text-center text-white font-bold">확인</Text>
             </TouchableOpacity>
         </View>
